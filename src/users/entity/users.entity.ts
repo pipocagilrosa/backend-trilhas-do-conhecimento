@@ -6,8 +6,12 @@ import {
   PrimaryGeneratedColumn,
   CreateDateColumn,
   UpdateDateColumn,
+  ManyToMany,
+  JoinTable,
+  OneToMany,
 } from 'typeorm';
-import parse from 'date-fns/parse';
+import { CareerTrack } from 'src/courses/entity/career-track.entity';
+import { Course } from 'src/courses/entity/course.entity';
 
 @Entity()
 export class User {
@@ -35,21 +39,28 @@ export class User {
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
 
+  @Column({ default: false })
+  inactive: boolean;
+
+  @Column({ nullable: true, default: null })
+  disabledAt?: Date;
+
+  @Column({ nullable: true, unique: true, default: null })
+  resetPasswordToken?: string;
+
+  @Column({ nullable: false })
+  favoriteWordPhrase: string;
+
+  @ManyToMany(() => CareerTrack, careerTrack => careerTrack.users)
+  @JoinTable()
+  careerTracks: CareerTrack[];
+
+  @OneToMany(() => Course, course => course.addedBy)
+  courses: Course[];
+
   // Getter to return createdAt in Brasília timezone
   get createdAt(): string {
     const brasiliaTimezone = 'America/Sao_Paulo';
-
-    // Format date using Intl.DateTimeFormat
-    const formattedDate = new Intl.DateTimeFormat('pt-BR', {
-      timeZone: brasiliaTimezone,
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-    }).format(this.rawCreatedAt);
-
-    return formattedDate;
+    return format(this.rawCreatedAt, 'dd-MM-yyyy HH:mm:ss', { timeZone: brasiliaTimezone });
   }
 }

@@ -8,10 +8,10 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.enableCors(corsConfig());
   const config = new DocumentBuilder()
-    .setTitle('Ecommerce API Documentation')
-    .setDescription('The Ecommerce API description')
-    .setVersion('1.0')
-    .addTag('Ecommerce')
+    .setTitle('Pipoca Agil BackEnd')
+    .setDescription('The Pipoca Agil BackEnd API description')
+    .setVersion('1.5')
+    .addTag('PipocaAgil')
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
@@ -24,6 +24,6 @@ async function bootstrap() {
   app.useGlobalGuards(new RolesGuard(reflector));
   
   // app starts listening on port 3003
-  await app.listen(process.env.PORT || 3003);
+  await app.listen(3003);
 }
 bootstrap();
