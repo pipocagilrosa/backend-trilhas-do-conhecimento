@@ -1,0 +1,11 @@
+services:
+  postgres:
+    container_name: postgres
+    image: postgres:13.9
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=local
+      - DB_PORT=5432
+      - POSTGRES_USER=local
+      - POSTGRES_PASSWORD=local
