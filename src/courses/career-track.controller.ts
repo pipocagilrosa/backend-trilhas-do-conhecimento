@@ -10,6 +10,7 @@ import { GetCareerTrackResponse } from "./dto/get-career-track.response";
 import { CreateCategoryDto } from "./dto/create-category.dto";
 import { CategoryCourse } from "./entity/category-course.entity";
 import { FindAllCareerCategoriesResponse } from "./dto/find-all-career-categories-response.dto";
+import { Public } from "src/auth/publicRoutes/public";
 
 @Controller('career-tracks')
 export class CareerTrackController {
@@ -22,9 +23,11 @@ export class CareerTrackController {
         return this.careerTrackService.create(createCareerTrackDto);
     }
 
+    @Public()
     @Get()
-    async findAll() {
-        const allCareerTracks = await this.careerTrackService.findAll();
+    async findAll(@Req() request: any) {
+        const userId = request.user?.userId || null;
+        const allCareerTracks = await this.careerTrackService.findAllWithSubscription(userId);
         return allCareerTracks.map(careerTrack => FindAllCareerTrackResponse.convertFindAllCareerTrackDomainToResponse(careerTrack));
     }
 
@@ -42,8 +45,8 @@ export class CareerTrackController {
         return this.careerTrackService.createCategory(createCategoryDto);
     }
 
+    @Public()
     @Get('/:id/categories')
-    @UseGuards(JwtAuthGuard)
     async findCategoriesByCareerTrackId(
         @Param('id') careerTrackId: string,
         @Req() request: any,
