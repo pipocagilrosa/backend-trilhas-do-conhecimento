@@ -23,20 +23,19 @@ export class CareerTrackController {
         return this.careerTrackService.create(createCareerTrackDto);
     }
 
-    @Public()
     @Get()
-    async findAll(@Req() request: any) {
-        const userId = request.user?.userId || null;
-        const allCareerTracks = await this.careerTrackService.findAllWithSubscription(userId);
+
+    async findAll() {
+        const allCareerTracks = await this.careerTrackService.findAll();
         return allCareerTracks.map(careerTrack => FindAllCareerTrackResponse.convertFindAllCareerTrackDomainToResponse(careerTrack));
     }
 
-    @Public()
     @Get(':id')
     async findOne(@Param('id') id: string) {
         const careerTrack = await this.careerTrackService.findOne(id);
         return GetCareerTrackResponse.convertCareerTrackDomainToResponse(careerTrack);
     }
+
 
     @Post('/categories')
     @UseGuards(JwtAuthGuard, RolesGuard)
@@ -45,14 +44,20 @@ export class CareerTrackController {
         return this.careerTrackService.createCategory(createCategoryDto);
     }
 
-    @Public()
-    @Get('/:id/categories')
-    async findCategoriesByCareerTrackId(
+    @Get('/:id/categories/authenticated')
+    @UseGuards(JwtAuthGuard)
+    async findAuthenticatedCategoriesByCareerTrackId(
         @Param('id') careerTrackId: string,
         @Req() request: any,
     ): Promise<FindAllCareerCategoriesResponse> {
         const userId = request.user?.userId || null;
         const careerTrackWithCategories = await this.careerTrackService.findCategoriesWithSubscription(careerTrackId, userId);
+        return FindAllCareerCategoriesResponse.fromDomainToResponse(careerTrackWithCategories);
+    }
+
+    @Get('/:id/categories')
+    async findCategoriesByCareerTrackId(@Param('id') careerTrackId: string): Promise<FindAllCareerCategoriesResponse> {
+        const careerTrackWithCategories = await this.careerTrackService.findCategoriesByCareerTrackId(careerTrackId);
         return FindAllCareerCategoriesResponse.fromDomainToResponse(careerTrackWithCategories);
     }
 
