@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Course } from './entity/course.entity';
@@ -6,10 +6,13 @@ import { CareerTrack } from './entity/career-track.entity';
 import { CreateCareerTrackDto } from './dto/career-track.dto';
 import { CategoryCourse } from './entity/category-course.entity';
 import { CreateCategoryDto } from './dto/create-category.dto';
+import { User } from 'src/users/entity/users.entity';
 
 @Injectable()
 export class CareerTrackService {
   constructor(
+    @InjectRepository(User)
+    private userRepository: Repository<User>,
     @InjectRepository(CareerTrack)
     private readonly careerTrackRepository: Repository<CareerTrack>,
     @InjectRepository(CategoryCourse)
@@ -92,7 +95,7 @@ export class CareerTrackService {
   }
 
   async disableCareer(careerTrackId: string): Promise<void> {
-    const careerTrack = await this.careerTrackRepository.findOne({ where: { id: careerTrackId } });
+    const careerTrack = await this.careerTrackRepository.findOne({ where: { id: careerTrackId, inactive: false } });
 
     if (!careerTrack) {
       throw new NotFoundException('CareerTrack not found');
@@ -111,6 +114,74 @@ export class CareerTrackService {
 
     category.inactive = true;
     await this.categoryCourseRepository.save(category);
+  }
+
+  async enrollUserInCareerTrack(userId: string, careerTrackIds: string[]): Promise<void> {
+    const user = await this.userRepository.findOne({
+      where: { id: userId, inactive: false }, // Agora o TypeORM reconhece 'id'
+      relations: ['careerTracks'],
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const careerTracks = await this.careerTrackRepository.findByIds(careerTrackIds);
+
+    if (careerTracks.length !== careerTrackIds.length) {
+      throw new NotFoundException('One or more career tracks not found');
+    }
+
+    // Evita duplicação de trilhas de carreira
+    const newCareerTracks = careerTracks.filter(
+      (track) => !user.careerTracks.some((userTrack) => userTrack.id === track.id),
+    );
+
+    user.careerTracks = [...user.careerTracks, ...newCareerTracks];
+    await this.userRepository.save(user);
+  }
+
+  async findAllWithSubscription(userId: string | null): Promise<CareerTrack[]> {
+    const careerTracks = await this.careerTrackRepository.find({ where: { inactive: false } });
+
+    if (userId) {
+      const user = await this.userRepository.findOne({
+        where: { id: userId, inactive: false },
+        relations: ['careerTracks'],
+      });
+
+      if (user) {
+        careerTracks.forEach(track => {
+          track['subscribed'] = user.careerTracks.some(userTrack => userTrack.id === track.id);
+        });
+      }
+    }
+
+    return careerTracks;
+  }
+
+  async findCategoriesWithSubscription(careerTrackId: string, userId: string | null): Promise<CareerTrack> {
+    const careerTrack = await this.careerTrackRepository.findOne({
+      where: { id: careerTrackId, inactive: false },
+      relations: ['categoryCourse'],
+    });
+
+    if (!careerTrack) {
+      throw new NotFoundException('CareerTrack not found');
+    }
+
+    if (userId) {
+      const user = await this.userRepository.findOne({
+        where: { id: userId, inactive: false },
+        relations: ['careerTracks'],
+      });
+
+      if (user) {
+        careerTrack['subscribed'] = user.careerTracks.some(userTrack => userTrack.id === careerTrackId);
+      }
+    }
+
+    return careerTrack;
   }
 
 }

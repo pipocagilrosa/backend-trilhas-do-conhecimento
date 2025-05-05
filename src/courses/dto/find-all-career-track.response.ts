@@ -7,6 +7,7 @@ export class FindAllCareerTrackResponse {
   description: string;
   image: string;
   index: number;
+  subscribed: boolean;
 
 
   static convertFindAllCareerTrackDomainToResponse(career: CareerTrack): FindAllCareerTrackResponse {
@@ -16,6 +17,7 @@ export class FindAllCareerTrackResponse {
       description: career.description,
       image: career.image,
       index: career.index,
+      subscribed: career['subscribed'] || false,
     };
   }
 }

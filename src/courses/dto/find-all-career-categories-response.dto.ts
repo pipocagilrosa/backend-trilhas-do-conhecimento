@@ -10,6 +10,7 @@ export class FindAllCareerCategoriesResponse {
     contentTitle: string;
     contentSubtitle: string;
     index: number;
+    subscribed: boolean;
     categories: {
         level: string;
         items: {
@@ -52,6 +53,7 @@ export class FindAllCareerCategoriesResponse {
             contentTitle: careerTrack.contentTitle,
             contentSubtitle: careerTrack.contentSubtitle,
             index: careerTrack.index,
+            subscribed: careerTrack['subscribed'] || false,
             categories: groupedCategories,
         };
     }

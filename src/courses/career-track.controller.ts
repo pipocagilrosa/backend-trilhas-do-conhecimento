@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, Param, Patch, Post, Req, UseGuards } from "@nestjs/common";
 import { JwtAuthGuard } from "src/auth/guards/jwt-auth.guard";
 import { CareerTrackService } from "./career-track.service";
 import { CreateCareerTrackDto } from "./dto/career-track.dto";
@@ -43,8 +43,13 @@ export class CareerTrackController {
     }
 
     @Get('/:id/categories')
-    async findCategoriesByCareerTrackId(@Param('id') careerTrackId: string): Promise<FindAllCareerCategoriesResponse> {
-        const careerTrackWithCategories = await this.careerTrackService.findCategoriesByCareerTrackId(careerTrackId);
+    @UseGuards(JwtAuthGuard)
+    async findCategoriesByCareerTrackId(
+        @Param('id') careerTrackId: string,
+        @Req() request: any,
+    ): Promise<FindAllCareerCategoriesResponse> {
+        const userId = request.user?.userId || null;
+        const careerTrackWithCategories = await this.careerTrackService.findCategoriesWithSubscription(careerTrackId, userId);
         return FindAllCareerCategoriesResponse.fromDomainToResponse(careerTrackWithCategories);
     }
 
@@ -62,5 +67,16 @@ export class CareerTrackController {
     async disableCategory(@Param('id') categoryId: string): Promise<{ message: string }> {
         await this.careerTrackService.disableCategory(categoryId);
         return { message: 'Category disabled successfully' };
+    }
+
+    @Post('/enroll')
+    @UseGuards(JwtAuthGuard)
+    async enrollCareerTrack(
+        @Req() request: any,
+        @Body('careerTrackId') careerTrackId: string,
+    ): Promise<{ message: string }> {
+        const userId = request.user.userId; // Obtém o ID do usuário logado do token JWT
+        await this.careerTrackService.enrollUserInCareerTrack(userId, [careerTrackId]);
+        return { message: 'Successfully enrolled in the career track' };
     }
 }
