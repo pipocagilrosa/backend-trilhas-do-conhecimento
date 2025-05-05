@@ -20,4 +20,12 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
 
     return super.canActivate(context);
   }
+
+  handleRequest(err, user, info, context) {
+    // Permite requisições sem token, mas adiciona o usuário ao contexto se o token for válido
+    if (err || !user) {
+      return null; // Retorna null se não houver usuário autenticado
+    }
+    return user; // Retorna o usuário autenticado
+  }
 }

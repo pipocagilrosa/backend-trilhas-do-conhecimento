@@ -157,7 +157,10 @@ export class CareerTrackService {
       }
     }
 
-    return careerTracks;
+    return careerTracks.map(track => ({
+      ...track,
+      subscribed: track['subscribed'] || false, // Garante que "subscribed" seja false para usuários não logados
+    }));
   }
 
   async findCategoriesWithSubscription(careerTrackId: string, userId: string | null): Promise<CareerTrack> {
