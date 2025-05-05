@@ -23,6 +23,7 @@ export class CareerTrackController {
         return this.careerTrackService.create(createCareerTrackDto);
     }
 
+    @Public()
     @Get()
     async findAll(@Req() request: any) {
         const userId = request.user?.userId || null;
@@ -30,7 +31,7 @@ export class CareerTrackController {
         return allCareerTracks.map(careerTrack => FindAllCareerTrackResponse.convertFindAllCareerTrackDomainToResponse(careerTrack));
     }
 
-
+    @Public()
     @Get(':id')
     async findOne(@Param('id') id: string) {
         const careerTrack = await this.careerTrackService.findOne(id);
@@ -44,6 +45,7 @@ export class CareerTrackController {
         return this.careerTrackService.createCategory(createCategoryDto);
     }
 
+    @Public()
     @Get('/:id/categories')
     async findCategoriesByCareerTrackId(
         @Param('id') careerTrackId: string,
