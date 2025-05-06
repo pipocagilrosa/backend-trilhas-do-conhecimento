@@ -211,13 +211,23 @@ export class UsersService {
     await this.userRepository.save(user);
   }
 
-  async getActiveCareerTracks(userId: string): Promise<CareerTrack[]> {
-    const user = await this.userRepository.findOne({ where: { id: userId, inactive: false }, relations: ['careerTracks'] });
+  async getActiveCareerTracks(userId: string): Promise<{ area: string; description: string; image: string; userName: string }[]> {
+    const user = await this.userRepository.findOne({
+      where: { id: userId, inactive: false },
+      relations: ['careerTracks'],
+    });
+
     if (!user) {
       throw new NotFoundException('User not found');
     }
 
-    return user.careerTracks;
+    // Mapeia os dados necessários
+    return user.careerTracks.map(careerTrack => ({
+      area: careerTrack.area,
+      description: careerTrack.description,
+      image: careerTrack.image,
+      userName: user.name, // Nome do usuário
+    }));
   }
 
   async enrollCourse(userId: string, courseId: string): Promise<void> {
