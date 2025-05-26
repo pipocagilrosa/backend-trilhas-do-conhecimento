@@ -15,6 +15,7 @@ async function bootstrap() {
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
+  const port = process.env.PORT || 4000
 
   // SwaggerModule setup (see https://docs.nestjs.com/recipes/swagger)
   SwaggerModule.setup('api', app, document);
@@ -22,8 +23,8 @@ async function bootstrap() {
   // Global Guards (see https://docs.nestjs.com/guards#global-guards)
   const reflector = app.get(Reflector);
   app.useGlobalGuards(new RolesGuard(reflector));
-  
-  // app starts listening on port 3003
-  await app.listen(3003);
+
+  // app starts listening on port
+  await app.listen(port);
 }
 bootstrap();
