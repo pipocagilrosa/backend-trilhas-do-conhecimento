@@ -25,6 +25,6 @@ async function bootstrap() {
   app.useGlobalGuards(new RolesGuard(reflector));
 
   // app starts listening on port
-  await app.listen(port);
+  await app.listen(10000);
 }
 bootstrap();
