@@ -187,4 +187,39 @@ export class CareerTrackService {
     return careerTrack;
   }
 
+  async findUserEnrolledCareerTracks(userId: string): Promise<CareerTrack[]> {
+    const user = await this.userRepository.findOne({
+      where: { id: userId, inactive: false },
+      relations: ['careerTracks', 'careerTracks.categoryCourse', 'careerTracks.categoryCourse.courses'],
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    // Filtrar apenas carreiras ativas
+    return user.careerTracks
+      .filter(careerTrack => !careerTrack.inactive)
+      .sort((a, b) => a.index - b.index);
+  }
+
+  async findUserEnrolledCareerTrackById(userId: string, careerTrackId: string): Promise<CareerTrack> {
+    const user = await this.userRepository.findOne({
+      where: { id: userId, inactive: false },
+      relations: ['careerTracks', 'careerTracks.categoryCourse', 'careerTracks.categoryCourse.courses'],
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const careerTrack = user.careerTracks.find(track => track.id === careerTrackId && !track.inactive);
+
+    if (!careerTrack) {
+      throw new NotFoundException('Career track not found or user is not enrolled');
+    }
+
+    return careerTrack;
+  }
+
 }
