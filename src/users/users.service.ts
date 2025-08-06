@@ -211,7 +211,7 @@ export class UsersService {
     await this.userRepository.save(user);
   }
 
-  async getActiveCareerTracks(userId: string): Promise<{ area: string; description: string; image: string; userName: string }[]> {
+  async getActiveCareerTracks(userId: string): Promise<{ id: string; area: string; description: string; image: string; userName: string }[]> {
     const user = await this.userRepository.findOne({
       where: { id: userId, inactive: false },
       relations: ['careerTracks'],
@@ -221,8 +221,9 @@ export class UsersService {
       throw new NotFoundException('User not found');
     }
 
-    // Mapeia os dados necessários
+    // Mapeia os dados necessários incluindo o ID da carreira
     return user.careerTracks.map(careerTrack => ({
+      id: careerTrack.id,
       area: careerTrack.area,
       description: careerTrack.description,
       image: careerTrack.image,

@@ -118,7 +118,7 @@ export class UsersController {
   @UseGuards(JwtAuthGuard)
   async getActiveCareerTracks(
     @Param('userId') userId: string,
-  ): Promise<{ area: string; description: string; image: string; userName: string }[]> {
+  ): Promise<{ id: string; area: string; description: string; image: string; userName: string }[]> {
     return this.usersService.getActiveCareerTracks(userId);
   }
 
