@@ -31,7 +31,6 @@ export class CareerTrackController {
     }
 
     @Get()
-
     async findAll() {
         const allCareerTracks = await this.careerTrackService.findAll();
         return allCareerTracks.map(careerTrack => FindAllCareerTrackResponse.convertFindAllCareerTrackDomainToResponse(careerTrack));
@@ -44,9 +43,8 @@ export class CareerTrackController {
     }
 
 
-    @Get('/all-categories')
-    @Public()
-    async findAllCategories(): Promise<AllCategoriesResponseDto[]> {
+    @Get('topics')
+    async findAllTopics(): Promise<AllCategoriesResponseDto[]> {
         const categories = await this.careerTrackService.findAllCategories();
         return AllCategoriesResponseDto.fromCategoryEntities(categories);
     }
