@@ -44,7 +44,7 @@ export class CareerTrackController {
     }
 
 
-    @Get('/categories')
+    @Get('/all-categories')
     @Public()
     async findAllCategories(): Promise<AllCategoriesResponseDto[]> {
         const categories = await this.careerTrackService.findAllCategories();
