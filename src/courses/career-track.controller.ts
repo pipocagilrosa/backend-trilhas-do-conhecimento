@@ -36,52 +36,20 @@ export class CareerTrackController {
         return allCareerTracks.map(careerTrack => FindAllCareerTrackResponse.convertFindAllCareerTrackDomainToResponse(careerTrack));
     }
 
-    @Get(':id')
-    async findOne(@Param('id') id: string) {
-        const careerTrack = await this.careerTrackService.findOne(id);
-        return GetCareerTrackResponse.convertCareerTrackDomainToResponse(careerTrack);
-    }
-
-
     @Get('topics')
     async findAllTopics(): Promise<AllCategoriesResponseDto[]> {
         const categories = await this.careerTrackService.findAllCategories();
         return AllCategoriesResponseDto.fromCategoryEntities(categories);
     }
 
-    @Post('/categories')
+    @Post('categories')
     @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles(Role.ADMIN)
     async createCategory(@Body() createCategoryDto: CreateCategoryDto): Promise<CategoryCourse> {
         return this.careerTrackService.createCategory(createCategoryDto);
     }
 
-    @Get('/:id/categories/authenticated')
-    @UseGuards(JwtAuthGuard)
-    async findAuthenticatedCategoriesByCareerTrackId(
-        @Param('id') careerTrackId: string,
-        @Req() request: any,
-    ): Promise<FindAllCareerCategoriesResponse> {
-        const userId = request.user?.userId || null;
-        const careerTrackWithCategories = await this.careerTrackService.findCategoriesWithSubscription(careerTrackId, userId);
-        return FindAllCareerCategoriesResponse.fromDomainToResponse(careerTrackWithCategories);
-    }
-
-    @Get('/:id/categories')
-    async findCategoriesByCareerTrackId(@Param('id') careerTrackId: string): Promise<FindAllCareerCategoriesResponse> {
-        const careerTrackWithCategories = await this.careerTrackService.findCategoriesByCareerTrackId(careerTrackId);
-        return FindAllCareerCategoriesResponse.fromDomainToResponse(careerTrackWithCategories);
-    }
-
-    @Patch('/:id/disable')
-    @UseGuards(JwtAuthGuard, RolesGuard)
-    @Roles(Role.ADMIN)
-    async disableCareer(@Param('id') careerTrackId: string): Promise<{ message: string }> {
-        await this.careerTrackService.disableCareer(careerTrackId);
-        return { message: 'Career disabled successfully' };
-    }
-
-    @Patch('/categories/:id/disable')
+    @Patch('categories/:id/disable')
     @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles(Role.ADMIN)
     async disableCategory(@Param('id') categoryId: string): Promise<{ message: string }> {
@@ -89,18 +57,18 @@ export class CareerTrackController {
         return { message: 'Category disabled successfully' };
     }
 
-    @Post('/enroll')
+    @Post('enroll')
     @UseGuards(JwtAuthGuard)
     async enrollCareerTrack(
         @Req() request: any,
         @Body('careerTrackId') careerTrackId: string,
     ): Promise<{ message: string }> {
-        const userId = request.user.userId; // Obtém o ID do usuário logado do token JWT
+        const userId = request.user.userId;
         await this.careerTrackService.enrollUserInCareerTrack(userId, [careerTrackId]);
         return { message: 'Successfully enrolled in the career track' };
     }
 
-    @Get('/my-enrollments')
+    @Get('my-enrollments')
     @UseGuards(JwtAuthGuard)
     async findMyEnrolledCareerTracks(
         @Req() request: any,
@@ -128,7 +96,7 @@ export class CareerTrackController {
         }
     }
 
-    @Get('/my-enrollments/summary')
+    @Get('my-enrollments/summary')
     @UseGuards(JwtAuthGuard)
     async findMyEnrolledCareerTracksSummary(
         @Req() request: any,
@@ -156,7 +124,7 @@ export class CareerTrackController {
         }
     }
 
-    @Get('/my-enrollments/:id')
+    @Get('my-enrollments/:id')
     @UseGuards(JwtAuthGuard)
     async findMyEnrolledCareerTrackById(
         @Req() request: any,
@@ -183,5 +151,36 @@ export class CareerTrackController {
             this.logger.error(`Error in findMyEnrolledCareerTrackById for user ${request.user?.userId}`, error);
             throw error;
         }
+    }
+
+    @Get(':id')
+    async findOne(@Param('id') id: string) {
+        const careerTrack = await this.careerTrackService.findOne(id);
+        return GetCareerTrackResponse.convertCareerTrackDomainToResponse(careerTrack);
+    }
+
+    @Get(':id/categories/authenticated')
+    @UseGuards(JwtAuthGuard)
+    async findAuthenticatedCategoriesByCareerTrackId(
+        @Param('id') careerTrackId: string,
+        @Req() request: any,
+    ): Promise<FindAllCareerCategoriesResponse> {
+        const userId = request.user?.userId || null;
+        const careerTrackWithCategories = await this.careerTrackService.findCategoriesWithSubscription(careerTrackId, userId);
+        return FindAllCareerCategoriesResponse.fromDomainToResponse(careerTrackWithCategories);
+    }
+
+    @Get(':id/categories')
+    async findCategoriesByCareerTrackId(@Param('id') careerTrackId: string): Promise<FindAllCareerCategoriesResponse> {
+        const careerTrackWithCategories = await this.careerTrackService.findCategoriesByCareerTrackId(careerTrackId);
+        return FindAllCareerCategoriesResponse.fromDomainToResponse(careerTrackWithCategories);
+    }
+
+    @Patch(':id/disable')
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(Role.ADMIN)
+    async disableCareer(@Param('id') careerTrackId: string): Promise<{ message: string }> {
+        await this.careerTrackService.disableCareer(careerTrackId);
+        return { message: 'Career disabled successfully' };
     }
 }
