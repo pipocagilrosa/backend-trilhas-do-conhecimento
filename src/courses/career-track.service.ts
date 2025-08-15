@@ -230,4 +230,55 @@ export class CareerTrackService {
     });
   }
 
+  async findOrCreateCategoryByTopicAndCareer(
+    careerTrackId: string,
+    topicName: string,
+    level: string
+  ): Promise<CategoryCourse> {
+    // Verifica se a carreira existe
+    const careerTrack = await this.careerTrackRepository.findOne({
+      where: { id: careerTrackId, inactive: false }
+    });
+
+    if (!careerTrack) {
+      throw new NotFoundException('Career track not found');
+    }
+
+    // Busca se já existe uma categoria com esse tópico e nível nesta carreira
+    let category = await this.categoryCourseRepository.findOne({
+      where: {
+        careerTrack: { id: careerTrackId },
+        topic: topicName,
+        level: level,
+        inactive: false
+      },
+      relations: ['careerTrack']
+    });
+
+    // Se não existe, cria uma nova
+    if (!category) {
+      category = this.categoryCourseRepository.create({
+        careerTrack,
+        topic: topicName,
+        level: level,
+        inactive: false
+      });
+      category = await this.categoryCourseRepository.save(category);
+    }
+
+    return category;
+  }
+
+  async findCategoriesByCareerAndTopic(careerTrackId: string, topicName: string): Promise<CategoryCourse[]> {
+    return this.categoryCourseRepository.find({
+      where: {
+        careerTrack: { id: careerTrackId },
+        topic: topicName,
+        inactive: false
+      },
+      relations: ['careerTrack', 'courses'],
+      order: { level: 'ASC' }
+    });
+  }
+
 }

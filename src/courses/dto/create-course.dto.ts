@@ -52,9 +52,20 @@ export class CreateCourseDto {
   @IsString({ message: 'TypeContent must be a string' })
   typeContent?: string;
 
+  // Nova forma: especificar carreira e tópico
+  @IsNotEmpty({ message: 'Career Track ID is required' })
+  @IsUUID('4', { message: 'Career Track ID must be a valid UUID' })
+  careerTrackId: string;
+
+  @IsNotEmpty({ message: 'Topic name is required' })
+  @IsString({ message: 'Topic name must be a string' })
+  topicName: string;
+
+  // Manter compatibilidade com o sistema antigo (opcional)
+  @IsOptional()
   @IsArray({ message: 'Categories must be an array of IDs' })
   @IsUUID('4', { each: true, message: 'Each category ID must be a valid UUID' })
-  categoriesIds: string[];
+  categoriesIds?: string[];
 
   static convertDtoToEntity(createCourseDto: CreateCourseDto): Course {
     const course = new Course();

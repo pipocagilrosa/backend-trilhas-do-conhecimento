@@ -6,6 +6,7 @@ import { Role } from '../enums/role.enum';
 import { CoursesService } from './courses.service';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { CreateCourseResponseDto } from 'src/courses/dto/create-course-response.dto';
+import { Course } from './entity/course.entity';
 
 @Controller('courses')
 export class CoursesController {
@@ -45,6 +46,21 @@ export class CoursesController {
   async disableCourse(@Param('id') courseId: string): Promise<{ message: string }> {
     await this.coursesService.disableCourse(courseId);
     return { message: 'Course disabled successfully' };
+  }
+
+  @Get('career/:careerTrackId/topic/:topicName')
+  async findCoursesByCareerAndTopic(
+    @Param('careerTrackId') careerTrackId: string,
+    @Param('topicName') topicName: string
+  ): Promise<Course[]> {
+    return this.coursesService.findCoursesByCareerAndTopic(careerTrackId, topicName);
+  }
+
+  @Get('career/:careerTrackId/grouped-by-topic')
+  async findCoursesGroupedByTopicInCareer(
+    @Param('careerTrackId') careerTrackId: string
+  ): Promise<{ [topic: string]: Course[] }> {
+    return this.coursesService.findCoursesGroupedByTopicInCareer(careerTrackId);
   }
 
 }
