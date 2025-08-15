@@ -222,4 +222,12 @@ export class CareerTrackService {
     return careerTrack;
   }
 
+  async findAllCategories(): Promise<CategoryCourse[]> {
+    return this.categoryCourseRepository.find({
+      where: { inactive: false },
+      relations: ['careerTrack'],
+      order: { careerTrack: { index: 'ASC' }, topic: 'ASC', level: 'ASC' }
+    });
+  }
+
 }

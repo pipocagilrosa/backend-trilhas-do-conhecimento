@@ -15,6 +15,7 @@ import { UserEnrolledCareerTrackResponse } from "./dto/user-enrolled-career-trac
 import { MyCareerTrackSummaryResponse } from "./dto/my-career-track-summary.response.dto";
 import { CareerTrackParamDto } from "./dto/career-track-param.dto";
 import { BadRequestException } from "@nestjs/common";
+import { AllCategoriesResponseDto } from "./dto/all-categories-response.dto";
 
 @Controller('career-tracks')
 export class CareerTrackController {
@@ -42,6 +43,13 @@ export class CareerTrackController {
         return GetCareerTrackResponse.convertCareerTrackDomainToResponse(careerTrack);
     }
 
+
+    @Get('/categories')
+    @Public()
+    async findAllCategories(): Promise<AllCategoriesResponseDto[]> {
+        const categories = await this.careerTrackService.findAllCategories();
+        return AllCategoriesResponseDto.fromCategoryEntities(categories);
+    }
 
     @Post('/categories')
     @UseGuards(JwtAuthGuard, RolesGuard)
