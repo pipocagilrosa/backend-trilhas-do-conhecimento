@@ -25,7 +25,7 @@ export class CoursesController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN)
   async create(@Body() createCourseDto: CreateCourseDto, @Request() req) {
-    const course = await this.coursesService.create(createCourseDto);
+    const course = await this.coursesService.create(createCourseDto, req.user.id);
     return CreateCourseResponseDto.convertCreateCourseDomainToResponse(course);
   }
 

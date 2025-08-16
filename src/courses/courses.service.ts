@@ -6,6 +6,7 @@ import { CreateCourseDto } from './dto/create-course.dto';
 import { CategoryCourse } from './entity/category-course.entity';
 import { FindAllCoursesResponseDto } from './dto/find-all-course-response.dto';
 import { CareerTrackService } from './career-track.service';
+import { User } from '../users/entity/users.entity';
 
 @Injectable()
 export class CoursesService {
@@ -26,7 +27,7 @@ export class CoursesService {
     return FindAllCoursesResponseDto.convertAllCoursesDomainToResponse(categories);
   }
 
-  async create(createCourseDto: CreateCourseDto): Promise<Course> {
+  async create(createCourseDto: CreateCourseDto, addedByUserId?: string): Promise<Course> {
     return await this.coursesRepository.manager.transaction(async transactionalEntityManager => {
       const { careerTrackId, topicName, level, categoriesIds, ...courseData } = createCourseDto;
 
@@ -56,6 +57,16 @@ export class CoursesService {
 
       const course = CreateCourseDto.convertDtoToEntity({ ...courseData, careerTrackId, topicName, level } as CreateCourseDto);
       course.categories = categories;
+
+      // Se foi fornecido um userId, busca o usuário e associa
+      if (addedByUserId) {
+        const user = await transactionalEntityManager.findOne(User, {
+          where: { id: addedByUserId }
+        });
+        if (user) {
+          course.addedBy = user;
+        }
+      }
 
       return transactionalEntityManager.save(course);
     });

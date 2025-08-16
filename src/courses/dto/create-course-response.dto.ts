@@ -14,7 +14,7 @@ export class CreateCourseResponseDto {
   givenRatingAuthor: number;
   addedBy: {
     name: string;
-  };
+  } | null;
   categories: { id: string; topic: string; level: string }[];
   createdAt: Date;
   updatedAt: Date;
@@ -33,9 +33,9 @@ export class CreateCourseResponseDto {
       hasCertificate: course.hasCertificate,
       isEnrollNeeded: course.isEnrollNeeded,
       givenRatingAuthor: course.givenRatingAuthor,
-      addedBy: {
+      addedBy: course.addedBy ? {
         name: course.addedBy.name
-      },
+      } : null,
       categories: course.categories.map(category => ({
         id: category.id,
         topic: category.topic,
