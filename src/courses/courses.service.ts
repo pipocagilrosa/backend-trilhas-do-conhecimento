@@ -54,10 +54,8 @@ export class CoursesService {
         throw new NotFoundException('Either provide careerTrackId + topicName or categoriesIds');
       }
 
-      const course = transactionalEntityManager.create(Course, {
-        ...courseData,
-        categories,
-      });
+      const course = CreateCourseDto.convertDtoToEntity({ ...courseData, careerTrackId, topicName, level } as CreateCourseDto);
+      course.categories = categories;
 
       return transactionalEntityManager.save(course);
     });
