@@ -151,7 +151,7 @@
 ## 🚀 **Como testar:**
 
 ```bash
-curl -X POST "http://localhost:3000/courses" \
+curl -X POST "https://trilhaconhecimento-jakltgda.b4a.run/courses" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer SEU_JWT_TOKEN_ADMIN" \
   -d '{

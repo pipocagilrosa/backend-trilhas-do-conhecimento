@@ -13,7 +13,7 @@
 #### Obter Token JWT (Login)
 
 ```bash
-curl -X POST http://localhost:3000/auth/login \
+curl -X POST https://trilhaconhecimento-jakltgda.b4a.run/auth/login \
   -H "Content-Type: application/json" \
   -d '{
     "email": "usuario@exemplo.com",
@@ -24,7 +24,7 @@ curl -X POST http://localhost:3000/auth/login \
 #### Inscrever-se em uma Carreira
 
 ```bash
-curl -X POST http://localhost:3000/career-tracks/enroll \
+curl -X POST https://trilhaconhecimento-jakltgda.b4a.run/career-tracks/enroll \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer SEU_JWT_TOKEN" \
   -d '{
@@ -35,21 +35,21 @@ curl -X POST http://localhost:3000/career-tracks/enroll \
 #### Listar Resumo das Minhas Carreiras
 
 ```bash
-curl -X GET http://localhost:3000/career-tracks/my-enrollments/summary \
+curl -X GET https://trilhaconhecimento-jakltgda.b4a.run/career-tracks/my-enrollments/summary \
   -H "Authorization: Bearer SEU_JWT_TOKEN"
 ```
 
 #### Listar Todas as Minhas Carreiras com Detalhes
 
 ```bash
-curl -X GET http://localhost:3000/career-tracks/my-enrollments \
+curl -X GET https://trilhaconhecimento-jakltgda.b4a.run/career-tracks/my-enrollments \
   -H "Authorization: Bearer SEU_JWT_TOKEN"
 ```
 
 #### Obter Detalhes de uma Carreira Específica Inscrita
 
 ```bash
-curl -X GET http://localhost:3000/career-tracks/my-enrollments/uuid-da-carreira \
+curl -X GET https://trilhaconhecimento-jakltgda.b4a.run/career-tracks/my-enrollments/uuid-da-carreira \
   -H "Authorization: Bearer SEU_JWT_TOKEN"
 ```
 
