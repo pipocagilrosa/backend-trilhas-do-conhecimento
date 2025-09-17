@@ -6,28 +6,35 @@ export default (): CorsOptions => {
   Logger.log(
     `Loading CORS Configuration for '${process.env.NODE_ENV}' environment`,
   );
-  const addLocalHostsToCorsPolicy = process.env.ADD_LOCALHOST_TO_CORS_POLICY;
-  const localHosts = ['*', 'http://0.0.0.0:3000', 'http://0.0.0.0:3001', 'http://0.0.0.0:3003', 'http://0.0.0.0:3004', 'https://magical-licorice-a74288.netlify.app/', 'https://magical-licorice-a74288.netlify.app', 'http://0.0.0.0:4000', 'http://0.0.0.0:4200'];
 
-  const allowOrigins = new Set<string>(
-    JSON.parse(process.env.FRONTEND_HOST || '[]'),
-  );
+  // Domínios permitidos
+  const allowedOrigins = [
+    'https://trilha-de-conhecimento.netlify.app',
+    'http://localhost:3000',
+    'http://localhost:4200',
+    'http://localhost:4000',
+    'http://127.0.0.1:3000',
+    'http://127.0.0.1:4200',
+    'http://127.0.0.1:4000',
+  ];
 
-  if (addLocalHostsToCorsPolicy === 'true') {
-    LOGGER.warn('Local front-end app hosts added to allow cors policy.');
-    localHosts.forEach((it) => allowOrigins.add(it));
-  }
-
-  const corsPolicy = {
-    origin: "*",
-    methods: "*",
-    allowedHeaders: "*",
+  const corsPolicy: CorsOptions = {
+    origin: (origin, callback) => {
+      // Permite requests sem origin (ex: ferramentas internas, curl)
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+      return callback(new Error('Not allowed by CORS'), false);
+    },
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "Origin", "Accept"],
     credentials: true,
     exposedHeaders: ['Access-Control-Allow-Origin'],
   };
 
   LOGGER.log(
-    `Cors application config instanciated as: ${JSON.stringify(corsPolicy)}`,
+    `Cors application config instanciated as: ${JSON.stringify({ ...corsPolicy, origin: '[Function]' })}`,
   );
   return corsPolicy;
 };
