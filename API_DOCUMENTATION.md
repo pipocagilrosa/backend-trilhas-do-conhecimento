@@ -355,27 +355,6 @@ Retorna todos os tópicos/categorias disponíveis.
 
 ### Criar Categoria/Tópico
 
-### Obter Perfil do Usuário
-
-**GET** `/user/:userId/profile`
-🔒 **Requer autenticação**
-
-Retorna os dados do perfil do usuário.
-
-**Response:**
-
-```json
-{
-  "id": "b1a7e8c2-1234-4f8a-9c2e-1a2b3c4d5e6f",
-  "name": "João Silva",
-  "email": "joao@exemplo.com",
-  "birthDate": "15/05/1990",
-  "favoriteWordPhrase": "Minha frase secreta",
-  "createdAt": "2025-01-01T00:00:00.000Z",
-  "updatedAt": "2025-01-01T00:00:00.000Z"
-}
-```
-
 **POST** `/career-tracks/categories`
 🔒 **Requer autenticação de ADMIN**
 
@@ -383,28 +362,21 @@ Cria uma nova categoria/tópico.
 
 **Request Body:**
 
-````json
+```json
 {
   "topicName": "Nome do Tópico",
   "level": "Iniciante",
   "careerTrackId": "uuid_da_trilha"
-### Reset de Senha - Solicitar
+}
+```
 
-**POST** `/user/reset-password`
-
-Envia email para reset de senha.
-
-**Request Body:**
+**Response:**
 
 ```json
 {
-  "email": "joao@exemplo.com"
+  "message": "Category created successfully"
 }
-````
-
-}
-
-````
+```
 
 ### Desabilitar Categoria
 
@@ -417,6 +389,24 @@ Desabilita uma categoria específica.
 
 ```json
 {
+  "message": "Category disabled successfully"
+}
+```
+
+### Reset de Senha - Solicitar
+
+**POST** `/user/reset-password`
+
+Envia email para reset de senha.
+
+**Request Body:**
+
+```json
+{
+  "email": "joao@exemplo.com"
+}
+```
+
 ### Reset de Senha - Confirmar
 
 **POST** `/user/confirm-reset-password`
@@ -431,21 +421,7 @@ Confirma o reset de senha com token ou frase favorita.
   "favoriteWordPhrase": "Minha frase secreta",
   "newPassword": "novasenha456"
 }
-````
-
-"message": "Category disabled successfully"
-}
-
-````
-
-### Inscrever em Trilha
-
-**POST** `/career-tracks/enroll`
-🔒 **Requer autenticação**
-
-Inscreve o usuário autenticado em uma trilha.
-
-**Request Body:**
+```
 
 ### Confirmar Frase Favorita
 
@@ -460,23 +436,7 @@ Confirma a frase favorita para autenticação alternativa.
   "token": "c0d1g0-t0k3n-reset",
   "favoriteWordPhrase": "Minha frase secreta"
 }
-````
-
-```json
-{
-  "careerTrackId": "uuid_da_trilha"
-}
 ```
-
-**Response:**
-
-```json
-{
-  "message": "Successfully enrolled in the career track"
-}
-```
-
-### Obter Minhas Inscrições
 
 ### Reset de Senha Seguro
 
@@ -495,108 +455,28 @@ Altera senha usando senha atual.
 }
 ```
 
-**GET** `/career-tracks/my-enrollments`
+### Inscrever em Trilha
+
+**POST** `/career-tracks/enroll`
 🔒 **Requer autenticação**
 
-Retorna as trilhas em que o usuário está inscrito.
-
-### Obter Resumo das Minhas Inscrições
-
-**GET** `/career-tracks/my-enrollments/summary`
-🔒 **Requer autenticação**
-
-Retorna um resumo das trilhas do usuário.
-
-### Inscrever em Trilhas de Carreira
-
-**POST** `/user/:userId/enroll-career-tracks`
-🔒 **Requer autenticação**
-
-Inscreve o usuário em trilhas de carreira.
+Inscreve o usuário autenticado em uma trilha.
 
 **Request Body:**
 
 ```json
 {
-  "careerTrackIds": [
-    "b7ae866f-fe7e-4983-a0c9-cc5b1e5dfbb6",
-    "9f80704f-3d5a-4ec6-ac4a-5b7440006fad"
-  ]
+  "careerTrackId": "uuid_da_trilha"
 }
 ```
-
-### Obter Inscrição Específica
-
-**GET** `/career-tracks/my-enrollments/:id`
-🔒 **Requer autenticação**
-
-Retorna detalhes de uma trilha específica do usuário.
-
-### Obter Categorias de uma Trilha (Autenticado)
-
-**GET** `/career-tracks/:id/categories/authenticated`
-🔒 **Requer autenticação**
-
-Retorna as categorias de uma trilha com informações de inscrição.
-
-### Inscrever em Curso
-
-**POST** `/user/:userId/enroll-course`
-🔒 **Requer autenticação**
-
-Inscreve o usuário em um curso específico.
-
-**Request Body:**
-
-```json
-{
-  "courseId": "c1a2b3c4-d5e6-7890-abcd-1234567890ef"
-}
-```
-
-### Obter Categorias de uma Trilha
-
-**GET** `/career-tracks/:id/categories`
-
-Retorna as categorias de uma trilha.
-
-### Desabilitar Trilha
-
-**PATCH** `/career-tracks/:id/disable`
-🔒 **Requer autenticação de ADMIN**
-
-Desabilita uma trilha de carreira.
-
-**Response:**
-
-````json
-{
-  "message": "Career disabled successfully"
-### Obter Trilhas Ativas do Usuário
-
-**GET** `/user/:userId/active-career-tracks`
-🔒 **Requer autenticação**
-
-Retorna as trilhas de carreira ativas do usuário.
 
 **Response:**
 
 ```json
-[
-  {
-    "id": "b7ae866f-fe7e-4983-a0c9-cc5b1e5dfbb6",
-    "area": "Tecnologia",
-    "title": "Desenvolvimento Web Full-Stack",
-    "description": "Trilha completa para desenvolvimento web, do front ao back-end.",
-    "image": "https://cdn.exemplo.com/imagens/web-fullstack.png",
-    "userName": "João Silva"
-  }
-]
-````
-
+{
+  "message": "Successfully enrolled in the career track"
 }
-
-````
+```
 
 ---
 
@@ -628,7 +508,7 @@ Retorna os cursos em que o usuário está inscrito.
     "topicName": "Angular"
   }
 ]
-````
+```
 
 ## 📖 Cursos
 
