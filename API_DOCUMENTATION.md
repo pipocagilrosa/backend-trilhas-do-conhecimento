@@ -287,16 +287,24 @@ Retorna os cursos em que o usuário está inscrito.
 
 Cria uma nova trilha de carreira.
 
-**Request Body:**
+**Request Body (exemplo completo):**
 
 ```json
 {
-  "title": "Desenvolvimento Web Full-Stack",
-  "area": "Tecnologia",
-  "description": "Trilha completa para desenvolvimento web",
-  "image": "url_da_imagem"
+  "area": "Design",
+  "title": "UX/UI Designer",
+  "description": "Trilha para profissionais de UX e UI Design, cobrindo fundamentos, ferramentas e práticas avançadas.",
+  "subTitle": "Do básico ao avançado em UX/UI",
+  "content": "Conteúdo detalhado da trilha, incluindo módulos, objetivos e roadmap.",
+  "image": "https://cdn.exemplo.com/imagens/ux-ui.png",
+  "contentTitle": "Conteúdo Programático",
+  "contentSubtitle": "O que você vai aprender",
+  "index": 1,
+  "contentImage": "https://cdn.exemplo.com/imagens/ux-ui-conteudo.png"
 }
 ```
+
+> **Obs:** Todos os campos acima são obrigatórios, exceto `contentImage` (opcional).
 
 ### Listar Todas as Trilhas
 
@@ -347,6 +355,27 @@ Retorna todos os tópicos/categorias disponíveis.
 
 ### Criar Categoria/Tópico
 
+### Obter Perfil do Usuário
+
+**GET** `/user/:userId/profile`
+🔒 **Requer autenticação**
+
+Retorna os dados do perfil do usuário.
+
+**Response:**
+
+```json
+{
+  "id": "b1a7e8c2-1234-4f8a-9c2e-1a2b3c4d5e6f",
+  "name": "João Silva",
+  "email": "joao@exemplo.com",
+  "birthDate": "15/05/1990",
+  "favoriteWordPhrase": "Minha frase secreta",
+  "createdAt": "2025-01-01T00:00:00.000Z",
+  "updatedAt": "2025-01-01T00:00:00.000Z"
+}
+```
+
 **POST** `/career-tracks/categories`
 🔒 **Requer autenticação de ADMIN**
 
@@ -354,13 +383,28 @@ Cria uma nova categoria/tópico.
 
 **Request Body:**
 
-```json
+````json
 {
   "topicName": "Nome do Tópico",
   "level": "Iniciante",
   "careerTrackId": "uuid_da_trilha"
+### Reset de Senha - Solicitar
+
+**POST** `/user/reset-password`
+
+Envia email para reset de senha.
+
+**Request Body:**
+
+```json
+{
+  "email": "joao@exemplo.com"
 }
-```
+````
+
+}
+
+````
 
 ### Desabilitar Categoria
 
@@ -373,9 +417,26 @@ Desabilita uma categoria específica.
 
 ```json
 {
-  "message": "Category disabled successfully"
+### Reset de Senha - Confirmar
+
+**POST** `/user/confirm-reset-password`
+
+Confirma o reset de senha com token ou frase favorita.
+
+**Request Body:**
+
+```json
+{
+  "token": "c0d1g0-t0k3n-reset",
+  "favoriteWordPhrase": "Minha frase secreta",
+  "newPassword": "novasenha456"
 }
-```
+````
+
+"message": "Category disabled successfully"
+}
+
+````
 
 ### Inscrever em Trilha
 
@@ -385,6 +446,21 @@ Desabilita uma categoria específica.
 Inscreve o usuário autenticado em uma trilha.
 
 **Request Body:**
+
+### Confirmar Frase Favorita
+
+**POST** `/user/confirm-pass`
+
+Confirma a frase favorita para autenticação alternativa.
+
+**Request Body:**
+
+```json
+{
+  "token": "c0d1g0-t0k3n-reset",
+  "favoriteWordPhrase": "Minha frase secreta"
+}
+````
 
 ```json
 {
@@ -402,6 +478,23 @@ Inscreve o usuário autenticado em uma trilha.
 
 ### Obter Minhas Inscrições
 
+### Reset de Senha Seguro
+
+**POST** `/user/reset-password-secure`
+🔒 **Requer autenticação**
+
+Altera senha usando senha atual.
+
+**Request Body:**
+
+```json
+{
+  "email": "joao@exemplo.com",
+  "oldPassword": "minhasenha123",
+  "newPassword": "novasenha456"
+}
+```
+
 **GET** `/career-tracks/my-enrollments`
 🔒 **Requer autenticação**
 
@@ -413,6 +506,24 @@ Retorna as trilhas em que o usuário está inscrito.
 🔒 **Requer autenticação**
 
 Retorna um resumo das trilhas do usuário.
+
+### Inscrever em Trilhas de Carreira
+
+**POST** `/user/:userId/enroll-career-tracks`
+🔒 **Requer autenticação**
+
+Inscreve o usuário em trilhas de carreira.
+
+**Request Body:**
+
+```json
+{
+  "careerTrackIds": [
+    "b7ae866f-fe7e-4983-a0c9-cc5b1e5dfbb6",
+    "9f80704f-3d5a-4ec6-ac4a-5b7440006fad"
+  ]
+}
+```
 
 ### Obter Inscrição Específica
 
@@ -427,6 +538,21 @@ Retorna detalhes de uma trilha específica do usuário.
 🔒 **Requer autenticação**
 
 Retorna as categorias de uma trilha com informações de inscrição.
+
+### Inscrever em Curso
+
+**POST** `/user/:userId/enroll-course`
+🔒 **Requer autenticação**
+
+Inscreve o usuário em um curso específico.
+
+**Request Body:**
+
+```json
+{
+  "courseId": "c1a2b3c4-d5e6-7890-abcd-1234567890ef"
+}
+```
 
 ### Obter Categorias de uma Trilha
 
@@ -443,13 +569,66 @@ Desabilita uma trilha de carreira.
 
 **Response:**
 
-```json
+````json
 {
   "message": "Career disabled successfully"
+### Obter Trilhas Ativas do Usuário
+
+**GET** `/user/:userId/active-career-tracks`
+🔒 **Requer autenticação**
+
+Retorna as trilhas de carreira ativas do usuário.
+
+**Response:**
+
+```json
+[
+  {
+    "id": "b7ae866f-fe7e-4983-a0c9-cc5b1e5dfbb6",
+    "area": "Tecnologia",
+    "title": "Desenvolvimento Web Full-Stack",
+    "description": "Trilha completa para desenvolvimento web, do front ao back-end.",
+    "image": "https://cdn.exemplo.com/imagens/web-fullstack.png",
+    "userName": "João Silva"
+  }
+]
+````
+
 }
-```
+
+````
 
 ---
+
+### Obter Cursos Ativos do Usuário
+
+**GET** `/user/:userId/active-courses`
+🔒 **Requer autenticação**
+
+Retorna os cursos em que o usuário está inscrito.
+
+**Response:**
+
+```json
+[
+  {
+    "id": "c1a2b3c4-d5e6-7890-abcd-1234567890ef",
+    "title": "Angular Completo",
+    "description": "Playlist do curso de Angular que engloba 4 módulos.",
+    "level": "Avançado",
+    "url": "https://www.youtube.com/watch?v=NCrWXZtlc7Q&list=PLdPPE0hUkt0rPyAkdhHIIquKbwrGUkvw3",
+    "price": 0,
+    "hasCertificate": false,
+    "isEnrollNeeded": false,
+    "givenRatingAuthor": 5,
+    "topic": "Angular",
+    "language": "PT",
+    "typeContent": "Vídeo",
+    "careerTrackId": "9f80704f-3d5a-4ec6-ac4a-5b7440006fad",
+    "topicName": "Angular"
+  }
+]
+````
 
 ## 📖 Cursos
 
@@ -462,43 +641,46 @@ Cria um novo curso. Suporta duas formas:
 
 #### Forma 1: Com trilha e tópico (Recomendado)
 
-**Request Body:**
+**Request Body (exemplo real):**
 
 ```json
 {
-  "title": "Introdução ao Angular",
-  "description": "Conceitos básicos do Angular",
-  "url": "https://exemplo.com/curso-angular",
+  "title": "Diferença entre UX e UI",
+  "description": "Diferença entre UX e UI",
+  "level": "Iniciante",
+  "url": "https://www.youtube.com/watch?v=NDgfm_fjNq8",
   "price": 0,
-  "hasCertificate": true,
+  "hasCertificate": false,
   "isEnrollNeeded": false,
-  "givenRatingAuthor": 4.5,
-  "index": 1,
-  "language": "Português",
-  "typeContent": "Curso",
-  "careerTrackId": "uuid_da_trilha",
-  "topicName": "Frontend Frameworks",
-  "level": "Iniciante"
+  "givenRatingAuthor": 4,
+  "topic": "Introdução ao UX/UI Design",
+  "language": "PT",
+  "typeContent": "vídeo",
+  "careerTrackId": "b7ae866f-fe7e-4983-a0c9-cc5b1e5dfbb6",
+  "topicName": "Introdução ao UX/UI Design"
 }
 ```
 
+> **Obs:** Os tópicos/categorias são criados automaticamente se não existirem.
+
 #### Forma 2: Com IDs de categorias (Legacy)
 
-**Request Body:**
+**Request Body (exemplo real):**
 
 ```json
 {
-  "title": "Introdução ao Angular",
-  "description": "Conceitos básicos do Angular",
-  "url": "https://exemplo.com/curso-angular",
+  "title": "Vídeo sobre a carreira de designer no Brasil",
+  "description": "Descubra o mercado de design no Brasil.",
+  "level": "Iniciante",
+  "url": "https://www.youtube.com/watch?v=xxxx",
   "price": 0,
-  "hasCertificate": true,
+  "hasCertificate": false,
   "isEnrollNeeded": false,
-  "givenRatingAuthor": 4.5,
-  "index": 1,
-  "language": "Português",
-  "typeContent": "Curso",
-  "categoriesIds": ["uuid1", "uuid2"]
+  "givenRatingAuthor": 5,
+  "topic": "Conhecendo a carreira",
+  "language": "PT",
+  "typeContent": "vídeo",
+  "categoriesIds": ["550e8400-e29b-41d4-a716-446655440000"]
 }
 ```
 
@@ -576,21 +758,25 @@ Desabilita um curso específico.
 
 **GET** `/courses/career/:careerTrackId/topic/:topicName`
 
-Retorna cursos filtrados por trilha de carreira e tópico.
+**Exemplo de chamada:**
 
-**Response:**
+```bash
+curl -X GET "https://trilhaconhecimento-jakltgda.b4a.run/courses/career/b7ae866f-fe7e-4983-a0c9-cc5b1e5dfbb6/topic/Introdução%20ao%20UX%2FUI%20Design"
+```
+
+**Exemplo de resposta:**
 
 ```json
 [
   {
     "id": "uuid",
-    "title": "Introdução ao Angular",
-    "description": "Conceitos básicos do Angular",
-    "url": "https://exemplo.com/curso-angular",
+    "title": "Diferença entre UX e UI",
+    "description": "Diferença entre UX e UI",
+    "url": "https://www.youtube.com/watch?v=NDgfm_fjNq8",
     "price": 0,
-    "hasCertificate": true,
-    "language": "Português",
-    "typeContent": "Curso"
+    "hasCertificate": false,
+    "language": "PT",
+    "typeContent": "vídeo"
   }
 ]
 ```
