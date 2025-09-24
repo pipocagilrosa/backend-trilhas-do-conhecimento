@@ -7,7 +7,7 @@ import * as bcrypt from 'bcrypt';
 import { v4 as uuidv4 } from 'uuid';
 import { MailerService } from '@nestjs-modules/mailer';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { CareerTrack } from 'src/courses/entity/career-track.entity';
+// import { CareerTrack } from 'src/courses/entity/career-track.entity';
 import { UserCourse } from './entity/user-course.entity';
 import { Course } from 'src/courses/entity/course.entity';
 
