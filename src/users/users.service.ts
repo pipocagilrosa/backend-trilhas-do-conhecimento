@@ -11,6 +11,8 @@ import { CareerTrack } from 'src/courses/entity/career-track.entity';
 import { UserCourse } from './entity/user-course.entity';
 import { Course } from 'src/courses/entity/course.entity';
 
+import { CareerTrack } from 'src/courses/entity/career-track.entity';
+
 
 @Injectable()
 export class UsersService {
@@ -252,6 +254,88 @@ export class UsersService {
     });
 
     return userCourses.map(userCourse => userCourse.course);
+  }
+
+  // --- NOVOS MÉTODOS ---
+
+  async setCourseCompleted(userId: string, courseId: string, completed: boolean): Promise<void> {
+    let userCourse = await this.userCourseRepository.findOne({
+      where: { user: { id: userId }, course: { id: courseId } },
+      relations: ['user', 'course'],
+    });
+    if (!userCourse) {
+      // Cria se não existir
+      const user = await this.userRepository.findOne({ where: { id: userId } });
+      const course = await this.coursesRepository.findOne({ where: { id: courseId } });
+      if (!user || !course) throw new NotFoundException('User or Course not found');
+      userCourse = this.userCourseRepository.create({ user, course });
+    }
+    userCourse.completed = completed;
+    userCourse.completedAt = completed ? new Date() : null;
+    await this.userCourseRepository.save(userCourse);
+  }
+
+  async setCourseFavorite(userId: string, courseId: string, favorite: boolean): Promise<void> {
+    let userCourse = await this.userCourseRepository.findOne({
+      where: { user: { id: userId }, course: { id: courseId } },
+      relations: ['user', 'course'],
+    });
+    if (!userCourse) {
+      // Cria se não existir
+      const user = await this.userRepository.findOne({ where: { id: userId } });
+      const course = await this.coursesRepository.findOne({ where: { id: courseId } });
+      if (!user || !course) throw new NotFoundException('User or Course not found');
+      userCourse = this.userCourseRepository.create({ user, course });
+    }
+    userCourse.favorite = favorite;
+    await this.userCourseRepository.save(userCourse);
+  }
+
+  async getFavoriteCourses(userId: string): Promise<Course[]> {
+    const userCourses = await this.userCourseRepository.find({
+      where: { user: { id: userId }, favorite: true },
+      relations: ['course'],
+    });
+    return userCourses.map(uc => uc.course);
+  }
+
+  /**
+   * Retorna o status de cada trilha do usuário:
+   * - Não Iniciado: nenhum curso concluído
+   * - Em Andamento: pelo menos um, mas não todos concluídos
+   * - Concluído: todos concluídos
+   */
+  async getCareerTrackStatus(userId: string): Promise<{ careerTrackId: string, status: string }[]> {
+    // Busca todas as trilhas do usuário
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+      relations: ['careerTracks', 'careerTracks.categoryCourse', 'careerTracks.categoryCourse.courses'],
+    });
+    if (!user) throw new NotFoundException('User not found');
+
+    const result: { careerTrackId: string, status: string }[] = [];
+    for (const track of user.careerTracks) {
+      // Todos os cursos da trilha
+      const allCourses = (track.categoryCourse || []).flatMap(cat => cat.courses || []);
+      const courseIds = allCourses.map(c => c.id);
+      if (courseIds.length === 0) {
+        result.push({ careerTrackId: track.id, status: 'Não Iniciado' });
+        continue;
+      }
+      // Cursos concluídos pelo usuário
+      const completedUserCourses = await this.userCourseRepository.find({
+        where: { user: { id: userId }, completed: true },
+        relations: ['course'],
+      });
+      const completedIds = completedUserCourses.map(uc => uc.course.id);
+      const completedCount = courseIds.filter(id => completedIds.includes(id)).length;
+      let status = 'Não Iniciado';
+      if (completedCount === 0) status = 'Não Iniciado';
+      else if (completedCount === courseIds.length) status = 'Concluído';
+      else status = 'Em Andamento';
+      result.push({ careerTrackId: track.id, status });
+    }
+    return result;
   }
 
 }

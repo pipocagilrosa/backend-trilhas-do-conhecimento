@@ -57,6 +57,109 @@ Realiza o login do usuário e retorna um token JWT.
 
 ## 👤 Usuários
 
+### Marcar/Desmarcar Curso como Concluído
+
+**PUT** `/user/:userId/course/:courseId/completed`
+🔒 **Requer autenticação**
+
+Marca ou desmarca um curso como concluído para o usuário.
+
+**Request Body:**
+
+```json
+{
+  "completed": true
+}
+```
+
+**Response:**
+
+```json
+{
+  "message": "Course marked as completed"
+}
+```
+
+Para desmarcar, envie `{ "completed": false }`.
+
+---
+
+### Marcar/Desmarcar Curso como Favorito
+
+**PUT** `/user/:userId/course/:courseId/favorite`
+🔒 **Requer autenticação**
+
+Marca ou desmarca um curso como favorito para o usuário.
+
+**Request Body:**
+
+```json
+{
+  "favorite": true
+}
+```
+
+**Response:**
+
+```json
+{
+  "message": "Course favorited"
+}
+```
+
+Para desfavoritar, envie `{ "favorite": false }`.
+
+---
+
+### Listar Cursos Favoritados do Usuário
+
+**GET** `/user/:userId/favorite-courses`
+🔒 **Requer autenticação**
+
+Retorna todos os cursos marcados como favoritos pelo usuário.
+
+**Response:**
+
+```json
+[
+  {
+    "id": "uuid",
+    "title": "Curso Favorito",
+    "description": "Descrição do curso",
+    "url": "https://exemplo.com/curso",
+    ...
+  }
+]
+```
+
+---
+
+### Status das Trilhas do Usuário
+
+**GET** `/user/:userId/career-track-status`
+🔒 **Requer autenticação**
+
+Retorna o status de progresso de cada trilha do usuário:
+
+- `Não Iniciado`: Nenhum curso concluído
+- `Em Andamento`: Pelo menos um, mas não todos concluídos
+- `Concluído`: Todos os cursos concluídos
+
+**Response:**
+
+```json
+[
+  {
+    "careerTrackId": "uuid",
+    "status": "Em Andamento"
+  },
+  {
+    "careerTrackId": "uuid2",
+    "status": "Concluído"
+  }
+]
+```
+
 ### Cadastrar Usuário
 
 **POST** `/user/signup`

@@ -27,4 +27,7 @@ export class UserCourse {
 
   @Column({ name: 'completed_at', nullable: true })
   completedAt: Date;
+
+  @Column({ default: false })
+  favorite: boolean;
 }

@@ -24,6 +24,8 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { CareerTrack } from 'src/courses/entity/career-track.entity';
 import { Course } from 'src/courses/entity/course.entity';
 
+import { UserCourse } from './entity/user-course.entity';
+
 @Controller('user')
 export class UsersController {
   constructor(private readonly usersService: UsersService) { }
@@ -136,6 +138,42 @@ export class UsersController {
   @UseGuards(JwtAuthGuard)
   async getActiveCourses(@Param('userId') userId: string): Promise<Course[]> {
     return this.usersService.getActiveCourses(userId);
+  }
+
+  // --- NOVOS ENDPOINTS ---
+
+  @UseGuards(JwtAuthGuard)
+  @Put('/:userId/course/:courseId/completed')
+  async setCourseCompleted(
+    @Param('userId') userId: string,
+    @Param('courseId') courseId: string,
+    @Body('completed') completed: boolean
+  ): Promise<{ message: string }> {
+    await this.usersService.setCourseCompleted(userId, courseId, completed);
+    return { message: `Course marked as ${completed ? 'completed' : 'not completed'}` };
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Put('/:userId/course/:courseId/favorite')
+  async setCourseFavorite(
+    @Param('userId') userId: string,
+    @Param('courseId') courseId: string,
+    @Body('favorite') favorite: boolean
+  ): Promise<{ message: string }> {
+    await this.usersService.setCourseFavorite(userId, courseId, favorite);
+    return { message: `Course ${favorite ? 'favorited' : 'unfavorited'}` };
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('/:userId/favorite-courses')
+  async getFavoriteCourses(@Param('userId') userId: string): Promise<Course[]> {
+    return this.usersService.getFavoriteCourses(userId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('/:userId/career-track-status')
+  async getCareerTrackStatus(@Param('userId') userId: string) {
+    return this.usersService.getCareerTrackStatus(userId);
   }
   /*
   @Put('/:userToken/request-enable')
