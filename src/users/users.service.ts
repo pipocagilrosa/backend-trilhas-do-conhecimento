@@ -291,12 +291,16 @@ export class UsersService {
     await this.userCourseRepository.save(userCourse);
   }
 
-  async getFavoriteCourses(userId: string): Promise<Course[]> {
+  async getFavoriteCourses(userId: string): Promise<any[]> {
     const userCourses = await this.userCourseRepository.find({
       where: { user: { id: userId }, favorite: true },
       relations: ['course'],
     });
-    return userCourses.map(uc => uc.course);
+    return userCourses.map(uc => ({
+      ...uc.course,
+      isFavorite: true,
+      isCompleted: uc.completed === true
+    }));
   }
 
   /**
