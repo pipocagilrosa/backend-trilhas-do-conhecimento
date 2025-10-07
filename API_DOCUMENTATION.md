@@ -57,6 +57,45 @@ Realiza o login do usuário e retorna um token JWT.
 
 ## 👤 Usuários
 
+### Listar Trilhas Inscritas do Usuário (com status dos cursos)
+
+**GET** `/career-tracks/my-enrollments`
+🔒 **Requer autenticação**
+
+Retorna todas as trilhas em que o usuário está inscrito, incluindo os cursos de cada trilha com os campos:
+
+- `isFavorite`: se o curso foi marcado como favorito pelo usuário
+- `isCompleted`: se o curso foi concluído pelo usuário
+
+**Response:**
+
+```json
+[
+  {
+    "id": "uuid",
+    "title": "UX/UI Designer",
+    "area": "Design",
+    "topics": [
+      {
+        "topic": "Introdução ao UX/UI Design",
+        "level": "Iniciante",
+        "courses": [
+          {
+            "id": "uuid_curso",
+            "title": "Diferença entre UX e UI",
+            "isFavorite": true,
+            "isCompleted": false
+            // ...outros campos do curso
+          }
+        ]
+      }
+    ]
+  }
+]
+```
+
+---
+
 ### Marcar/Desmarcar Curso como Concluído
 
 **PUT** `/user/:userId/course/:courseId/completed`
@@ -333,7 +372,11 @@ Inscreve o usuário em trilhas de carreira.
 **GET** `/user/:userId/active-career-tracks`
 🔒 **Requer autenticação**
 
-Retorna as trilhas de carreira ativas do usuário.
+Retorna as trilhas de carreira ativas do usuário, incluindo o status da trilha em inglês:
+
+- `not_started`: nenhum curso concluído
+- `in_progress`: pelo menos um, mas não todos concluídos
+- `completed`: todos os cursos concluídos
 
 **Response:**
 
@@ -344,7 +387,8 @@ Retorna as trilhas de carreira ativas do usuário.
     "area": "Desenvolvimento Web",
     "description": "Trilha para desenvolvimento web",
     "image": "url_da_imagem",
-    "userName": "Nome do Usuário"
+    "userName": "Nome do Usuário",
+    "status": "in_progress"
   }
 ]
 ```

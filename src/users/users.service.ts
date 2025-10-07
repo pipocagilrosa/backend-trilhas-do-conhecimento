@@ -213,24 +213,43 @@ export class UsersService {
     await this.userRepository.save(user);
   }
 
-  async getActiveCareerTracks(userId: string): Promise<{ id: string; area: string; description: string; image: string; userName: string }[]> {
+  async getActiveCareerTracks(userId: string): Promise<{ id: string; area: string; description: string; image: string; userName: string; status: string }[]> {
     const user = await this.userRepository.findOne({
       where: { id: userId, inactive: false },
-      relations: ['careerTracks'],
+      relations: ['careerTracks', 'careerTracks.categoryCourse', 'careerTracks.categoryCourse.courses'],
     });
 
     if (!user) {
       throw new NotFoundException('User not found');
     }
 
-    // Mapeia os dados necessários incluindo o ID da carreira
-    return user.careerTracks.map(careerTrack => ({
-      id: careerTrack.id,
-      area: careerTrack.area,
-      description: careerTrack.description,
-      image: careerTrack.image,
-      userName: user.name, // Nome do usuário
-    }));
+    // Para cada trilha, calcular status em inglês
+    const result = [];
+    for (const careerTrack of user.careerTracks) {
+      // Todos os cursos da trilha
+      const allCourses = (careerTrack.categoryCourse || []).flatMap(cat => cat.courses || []);
+      const courseIds = allCourses.map(c => c.id);
+      // Cursos concluídos pelo usuário
+      const completedUserCourses = await this.userCourseRepository.find({
+        where: { user: { id: userId }, completed: true },
+        relations: ['course'],
+      });
+      const completedIds = completedUserCourses.map(uc => uc.course.id);
+      const completedCount = courseIds.filter(id => completedIds.includes(id)).length;
+      let status = 'not_started';
+      if (completedCount === 0) status = 'not_started';
+      else if (completedCount === courseIds.length && courseIds.length > 0) status = 'completed';
+      else if (completedCount > 0) status = 'in_progress';
+      result.push({
+        id: careerTrack.id,
+        area: careerTrack.area,
+        description: careerTrack.description,
+        image: careerTrack.image,
+        userName: user.name,
+        status
+      });
+    }
+    return result;
   }
 
   async enrollCourse(userId: string, courseId: string): Promise<void> {

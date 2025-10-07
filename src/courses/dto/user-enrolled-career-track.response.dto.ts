@@ -1,6 +1,9 @@
+
 import { CareerTrack } from '../entity/career-track.entity';
 import { CategoryCourse } from '../entity/category-course.entity';
 import { Course } from '../entity/course.entity';
+import { UserCourse } from 'src/users/entity/user-course.entity';
+import { getRepository } from 'typeorm';
 
 export class EnrolledCourseResponseDto {
     id: string;
@@ -15,11 +18,12 @@ export class EnrolledCourseResponseDto {
     typeContent: string;
     index: number;
 
-    static fromCourse(course: Course): EnrolledCourseResponseDto {
+    static async fromCourseWithUser(course: Course, userId: string): Promise<EnrolledCourseResponseDto & { isFavorite: boolean, isCompleted: boolean }> {
         if (!course) {
             throw new Error('Course data is null or undefined');
         }
-
+        const userCourseRepo = getRepository(UserCourse);
+        const userCourse = await userCourseRepo.findOne({ where: { user: { id: userId }, course: { id: course.id } } });
         return {
             id: course.id || '',
             title: course.title || 'Título não disponível',
@@ -32,6 +36,8 @@ export class EnrolledCourseResponseDto {
             language: course.language || 'Não especificado',
             typeContent: course.typeContent || 'Conteúdo',
             index: course.index || 0,
+            isFavorite: userCourse?.favorite === true,
+            isCompleted: userCourse?.completed === true
         };
     }
 }
@@ -56,7 +62,7 @@ export class UserEnrolledCareerTrackResponse {
     index: number;
     topics: EnrolledTopicResponseDto[];
 
-    static fromCareerTrackWithCategories(careerTrack: CareerTrack): UserEnrolledCareerTrackResponse {
+    static async fromCareerTrackWithCategories(careerTrack: CareerTrack, userId: string): Promise<UserEnrolledCareerTrackResponse> {
         if (!careerTrack) {
             throw new Error('CareerTrack data is null or undefined');
         }
@@ -93,17 +99,20 @@ export class UserEnrolledCareerTrackResponse {
         // Converter para o formato de resposta
         const topics: EnrolledTopicResponseDto[] = [];
 
-        topicsMap.forEach((levelsMap, topic) => {
-            levelsMap.forEach((courses, level) => {
+        for (const [topic, levelsMap] of topicsMap.entries()) {
+            for (const [level, courses] of levelsMap.entries()) {
                 if (courses.length > 0) {
+                    const coursesWithStatus = await Promise.all(
+                        courses.map(course => EnrolledCourseResponseDto.fromCourseWithUser(course, userId))
+                    );
                     topics.push({
                         topic,
                         level,
-                        courses: courses.map(course => EnrolledCourseResponseDto.fromCourse(course))
+                        courses: coursesWithStatus
                     });
                 }
-            });
-        });
+            }
+        }
 
         // Ordenar tópicos e níveis
         topics.sort((a, b) => {
