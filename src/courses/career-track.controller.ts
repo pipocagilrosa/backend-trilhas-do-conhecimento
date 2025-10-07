@@ -145,7 +145,7 @@ export class CareerTrackController {
             const careerTrack = await this.careerTrackService.findUserEnrolledCareerTrackById(userId, careerTrackId);
 
             try {
-                return UserEnrolledCareerTrackResponse.fromCareerTrackWithCategories(careerTrack);
+                return await UserEnrolledCareerTrackResponse.fromCareerTrackWithCategories(careerTrack, userId);
             } catch (error) {
                 this.logger.error(`Error converting career track ${careerTrackId} to response`, error);
                 throw new BadRequestException(`Erro ao processar dados da carreira ${careerTrack.title || 'desconhecida'}`);
