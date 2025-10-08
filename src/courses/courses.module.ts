@@ -10,9 +10,10 @@ import { CourseRating } from './entity/course-rating.entity';
 import { CareerTrackController } from './career-track.controller';
 import { CareerTrackService } from './career-track.service';
 import { CategoryCourse } from './entity/category-course.entity';
+import { UserCourse } from 'src/users/entity/user-course.entity';
 
 @Module({
-  imports: [DatabaseModule, TypeOrmModule.forFeature([User, CareerTrack, Course, CategoryCourse, CourseRating])],
+  imports: [DatabaseModule, TypeOrmModule.forFeature([User, CareerTrack, Course, CategoryCourse, CourseRating, UserCourse])],
   controllers: [CoursesController, CareerTrackController],
   providers: [CoursesService, CareerTrackService],
   exports: [CoursesService, CareerTrackService],
