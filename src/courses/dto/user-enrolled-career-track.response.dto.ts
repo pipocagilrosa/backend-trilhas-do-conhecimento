@@ -2,8 +2,7 @@
 import { CareerTrack } from '../entity/career-track.entity';
 import { CategoryCourse } from '../entity/category-course.entity';
 import { Course } from '../entity/course.entity';
-import { UserCourse } from 'src/users/entity/user-course.entity';
-import { getRepository } from 'typeorm';
+
 
 export class EnrolledCourseResponseDto {
     id: string;
@@ -18,12 +17,10 @@ export class EnrolledCourseResponseDto {
     typeContent: string;
     index: number;
 
-    static async fromCourseWithUser(course: Course, userId: string): Promise<EnrolledCourseResponseDto & { isFavorite: boolean, isCompleted: boolean }> {
+    static fromCourseWithUser(course: Course, userCourse?: { favorite?: boolean, completed?: boolean }): EnrolledCourseResponseDto & { isFavorite: boolean, isCompleted: boolean } {
         if (!course) {
             throw new Error('Course data is null or undefined');
         }
-        const userCourseRepo = getRepository(UserCourse);
-        const userCourse = await userCourseRepo.findOne({ where: { user: { id: userId }, course: { id: course.id } } });
         return {
             id: course.id || '',
             title: course.title || 'Título não disponível',
@@ -62,69 +59,10 @@ export class UserEnrolledCareerTrackResponse {
     index: number;
     topics: EnrolledTopicResponseDto[];
 
-    static async fromCareerTrackWithCategories(careerTrack: CareerTrack, userId: string): Promise<UserEnrolledCareerTrackResponse> {
+    static fromCareerTrackWithCategories(careerTrack: CareerTrack, topics: EnrolledTopicResponseDto[]): UserEnrolledCareerTrackResponse {
         if (!careerTrack) {
             throw new Error('CareerTrack data is null or undefined');
         }
-
-        // Organizar tópicos por nível
-        const topicsMap = new Map<string, Map<string, Course[]>>();
-
-        if (careerTrack.categoryCourse && Array.isArray(careerTrack.categoryCourse)) {
-            careerTrack.categoryCourse
-                .filter(category => category && !category.inactive)
-                .forEach(category => {
-                    const topicName = category.topic || 'Tópico não especificado';
-                    const levelName = category.level || 'Nível não especificado';
-
-                    if (!topicsMap.has(topicName)) {
-                        topicsMap.set(topicName, new Map());
-                    }
-
-                    const topicMap = topicsMap.get(topicName)!;
-                    if (!topicMap.has(levelName)) {
-                        topicMap.set(levelName, []);
-                    }
-
-                    if (category.courses && Array.isArray(category.courses)) {
-                        const activeCourses = category.courses
-                            .filter(course => course && !course.inactive)
-                            .sort((a, b) => (a.index || 0) - (b.index || 0));
-
-                        topicMap.get(levelName)!.push(...activeCourses);
-                    }
-                });
-        }
-
-        // Converter para o formato de resposta
-        const topics: EnrolledTopicResponseDto[] = [];
-
-        for (const [topic, levelsMap] of topicsMap.entries()) {
-            for (const [level, courses] of levelsMap.entries()) {
-                if (courses.length > 0) {
-                    const coursesWithStatus = await Promise.all(
-                        courses.map(course => EnrolledCourseResponseDto.fromCourseWithUser(course, userId))
-                    );
-                    topics.push({
-                        topic,
-                        level,
-                        courses: coursesWithStatus
-                    });
-                }
-            }
-        }
-
-        // Ordenar tópicos e níveis
-        topics.sort((a, b) => {
-            // Primeiro por tópico
-            const topicComparison = a.topic.localeCompare(b.topic);
-            if (topicComparison !== 0) return topicComparison;
-
-            // Depois por nível
-            const levelOrder = { 'Iniciante': 1, 'Intermediário': 2, 'Avançado': 3 };
-            return (levelOrder[a.level] || 4) - (levelOrder[b.level] || 4);
-        });
-
         return {
             id: careerTrack.id || '',
             title: careerTrack.title || 'Título não disponível',
