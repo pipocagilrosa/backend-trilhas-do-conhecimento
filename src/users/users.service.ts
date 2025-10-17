@@ -47,17 +47,24 @@ export class UsersService {
   async findOne(email: string, password: string): Promise<User | undefined> {
     try {
       const user = await this.userRepository.findOne({
-        where: { email },
+        where: { email, inactive: false },
       });
-      const isMatch = await bcrypt.compare(password, user.password);
-      if (user && isMatch) {
 
+      if (!user) {
+        throw new NotFoundException(`User not found`);
+      }
+
+      const isMatch = await bcrypt.compare(password, user.password);
+      if (isMatch) {
         return user;
       } else {
-        throw new Error(`User not found`);
+        throw new NotFoundException(`Invalid password`);
       }
     } catch (err) {
-      throw new Error(`Error finding ${err} user ${err.message}`);
+      if (err instanceof NotFoundException) {
+        throw err;
+      }
+      throw new BadRequestException(`Error finding user: ${err.message}`);
     }
   }
 

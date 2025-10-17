@@ -89,6 +89,78 @@ export class CareerTrackService {
     return responses;
   }
 
+  /**
+   * Retorna uma trilha específica do usuário com status dos cursos (isFavorite, isCompleted)
+   */
+  async getUserEnrolledCareerTrackByIdWithStatus(userId: string, careerTrackId: string): Promise<UserEnrolledCareerTrackResponse> {
+    const user = await this.userRepository.findOne({
+      where: { id: userId, inactive: false },
+      relations: ['careerTracks', 'careerTracks.categoryCourse', 'careerTracks.categoryCourse.courses'],
+    });
+    if (!user) throw new NotFoundException('User not found');
+
+    // Buscar a carreira específica
+    const careerTrack = user.careerTracks.find(track => track.id === careerTrackId && !track.inactive);
+    if (!careerTrack) {
+      throw new NotFoundException('Career track not found or user is not enrolled');
+    }
+
+    const userCourses = await this.userCourseRepository.find({
+      where: { user: { id: userId } },
+      relations: ['course'],
+    });
+
+    // Map courseId to userCourse
+    const userCourseMap = new Map<string, UserCourse>();
+    userCourses.forEach(uc => {
+      if (uc.course?.id) userCourseMap.set(uc.course.id, uc);
+    });
+
+    // Organizar tópicos por nível
+    const topicsMap = new Map<string, Map<string, Course[]>>();
+    if (careerTrack.categoryCourse && Array.isArray(careerTrack.categoryCourse)) {
+      careerTrack.categoryCourse
+        .filter(category => category && !category.inactive)
+        .forEach(category => {
+          const topicName = category.topic || 'Tópico não especificado';
+          const levelName = category.level || 'Nível não especificado';
+          if (!topicsMap.has(topicName)) topicsMap.set(topicName, new Map());
+          const topicMap = topicsMap.get(topicName)!;
+          if (!topicMap.has(levelName)) topicMap.set(levelName, []);
+          if (category.courses && Array.isArray(category.courses)) {
+            const activeCourses = category.courses
+              .filter(course => course && !course.inactive)
+              .sort((a, b) => (a.index || 0) - (b.index || 0));
+            topicMap.get(levelName)!.push(...activeCourses);
+          }
+        });
+    }
+
+    // Converter para o formato de resposta
+    const topics: EnrolledTopicResponseDto[] = [];
+    for (const [topic, levelsMap] of topicsMap.entries()) {
+      for (const [level, courses] of levelsMap.entries()) {
+        if (courses.length > 0) {
+          const coursesWithStatus = courses.map(course => {
+            const userCourse = userCourseMap.get(course.id);
+            return EnrolledCourseResponseDto.fromCourseWithUser(course, userCourse);
+          });
+          topics.push({ topic, level, courses: coursesWithStatus });
+        }
+      }
+    }
+
+    // Ordenar tópicos e níveis
+    topics.sort((a, b) => {
+      const topicComparison = a.topic.localeCompare(b.topic);
+      if (topicComparison !== 0) return topicComparison;
+      const levelOrder = { 'Iniciante': 1, 'Intermediário': 2, 'Avançado': 3 };
+      return (levelOrder[a.level] || 4) - (levelOrder[b.level] || 4);
+    });
+
+    return UserEnrolledCareerTrackResponse.fromCareerTrackWithCategories(careerTrack, topics);
+  }
+
   async create(createCareerTrackDto: CreateCareerTrackDto): Promise<CareerTrack> {
     const careerTrack = this.careerTrackRepository.create(createCareerTrackDto);
     return this.careerTrackRepository.save(careerTrack);
