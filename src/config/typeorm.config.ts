@@ -30,7 +30,7 @@ export const typeOrmConfig: TypeOrmModuleOptions = {
   password: process.env.DB_PASSWORD,
   database: process.env.DB_DATABASE,
   entities: [join(__dirname, '../', '**', '*.entity.{ts,js}')],
-  synchronize: true,
+  synchronize: false,
 };
 
 // This is used by TypeORM migration scripts

@@ -1,12 +1,13 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository } from 'typeorm';
+import { In, Repository, Like, Brackets } from 'typeorm';
 import { Course } from './entity/course.entity';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { CategoryCourse } from './entity/category-course.entity';
 import { FindAllCoursesResponseDto } from './dto/find-all-course-response.dto';
 import { CareerTrackService } from './career-track.service';
 import { User } from '../users/entity/users.entity';
+import { FilterCoursesDto } from './dto/filter-courses.dto';
 
 @Injectable()
 export class CoursesService {
@@ -140,5 +141,93 @@ export class CoursesService {
     });
 
     return coursesByTopic;
+  }
+
+  /**
+   * Filtra cursos baseado em múltiplos critérios
+   * @param filters - Objeto com os filtros a serem aplicados
+   * @returns Array de cursos que atendem aos critérios
+   */
+  async filterCourses(filters: FilterCoursesDto): Promise<Course[]> {
+    const queryBuilder = this.coursesRepository.createQueryBuilder('course')
+      .leftJoinAndSelect('course.categories', 'category')
+      .leftJoinAndSelect('category.careerTrack', 'careerTrack')
+      .where('course.inactive = :inactive', { inactive: false });
+
+    // Filtro por palavras-chave (busca em título e descrição)
+    const keywords = [filters.keyword1, filters.keyword2, filters.keyword3].filter(k => k);
+
+    if (keywords.length > 0) {
+      queryBuilder.andWhere(
+        new Brackets(qb => {
+          keywords.forEach((keyword, index) => {
+            const paramTitle = `keywordTitle${index}`;
+            const paramDesc = `keywordDesc${index}`;
+            const paramType = `keywordType${index}`;
+
+            if (index === 0) {
+              qb.where(
+                `(LOWER(course.title) LIKE LOWER(:${paramTitle}) OR 
+                  LOWER(course.description) LIKE LOWER(:${paramDesc}) OR 
+                  LOWER(course.typeContent) LIKE LOWER(:${paramType}))`,
+                {
+                  [paramTitle]: `%${keyword}%`,
+                  [paramDesc]: `%${keyword}%`,
+                  [paramType]: `%${keyword}%`
+                }
+              );
+            } else {
+              qb.orWhere(
+                `(LOWER(course.title) LIKE LOWER(:${paramTitle}) OR 
+                  LOWER(course.description) LIKE LOWER(:${paramDesc}) OR 
+                  LOWER(course.typeContent) LIKE LOWER(:${paramType}))`,
+                {
+                  [paramTitle]: `%${keyword}%`,
+                  [paramDesc]: `%${keyword}%`,
+                  [paramType]: `%${keyword}%`
+                }
+              );
+            }
+          });
+        })
+      );
+    }
+
+    // Filtro por nível
+    if (filters.level) {
+      queryBuilder.andWhere('LOWER(category.level) = LOWER(:level)', { level: filters.level });
+    }
+
+    // Filtro por tópico/assunto
+    if (filters.topic) {
+      queryBuilder.andWhere('LOWER(category.topic) LIKE LOWER(:topic)', { topic: `%${filters.topic}%` });
+    }
+
+    // Filtro por trilha de carreira
+    if (filters.careerTrackId) {
+      queryBuilder.andWhere('careerTrack.id = :careerTrackId', { careerTrackId: filters.careerTrackId });
+    }
+
+    // Filtro por idioma
+    if (filters.language) {
+      queryBuilder.andWhere('LOWER(course.language) = LOWER(:language)', { language: filters.language });
+    }
+
+    // Filtro por tipo de conteúdo
+    if (filters.typeContent) {
+      queryBuilder.andWhere('LOWER(course.typeContent) = LOWER(:typeContent)', { typeContent: filters.typeContent });
+    }
+
+    // Remove duplicatas e ordena
+    const courses = await queryBuilder
+      .orderBy('course.title', 'ASC')
+      .getMany();
+
+    // Remove cursos duplicados (caso um curso esteja em múltiplas categorias)
+    const uniqueCourses = courses.filter((course, index, self) =>
+      index === self.findIndex(c => c.id === course.id)
+    );
+
+    return uniqueCourses;
   }
 }

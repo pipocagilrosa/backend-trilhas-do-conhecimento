@@ -1,4 +1,4 @@
-import { Controller, Post, Body, UseGuards, Request, Get, Patch, Param } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, Request, Get, Patch, Param, Query } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorator/roles.decorator';
@@ -7,6 +7,8 @@ import { CoursesService } from './courses.service';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { CreateCourseResponseDto } from 'src/courses/dto/create-course-response.dto';
 import { Course } from './entity/course.entity';
+import { FilterCoursesDto } from './dto/filter-courses.dto';
+import { FilteredCoursesResponseDto } from './dto/filtered-courses-response.dto';
 
 @Controller('courses')
 export class CoursesController {
@@ -38,6 +40,23 @@ export class CoursesController {
   /******  a2d6248b-f1c9-4957-829c-aebd45f51f26  *******/
   async findAllCourses() {
     return this.coursesService.findAllCourses();
+  }
+
+  /**
+   * Endpoint para filtrar cursos por múltiplos critérios
+   * @param filterDto - Query params com filtros (keyword1, keyword2, keyword3, level, topic, careerTrackId, language, typeContent)
+   * @returns {Promise<FilteredCoursesResponseDto>} cursos filtrados com metadata
+   * 
+   * Exemplos de uso:
+   * - /courses/filter?keyword1=javascript&level=Iniciante
+   * - /courses/filter?topic=Backend&language=Português
+   * - /courses/filter?keyword1=python&keyword2=data&keyword3=science&careerTrackId=123
+   */
+  @Get('filter')
+  @UseGuards(JwtAuthGuard)
+  async filterCourses(@Query() filterDto: FilterCoursesDto): Promise<FilteredCoursesResponseDto> {
+    const courses = await this.coursesService.filterCourses(filterDto);
+    return FilteredCoursesResponseDto.create(courses, filterDto);
   }
 
   @Patch('/:id/disable')
