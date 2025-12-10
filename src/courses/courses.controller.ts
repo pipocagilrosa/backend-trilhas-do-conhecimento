@@ -1,4 +1,4 @@
-import { Controller, Post, Body, UseGuards, Request, Get, Patch, Param, Query } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, Request, Get, Patch, Param, Query, Req } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorator/roles.decorator';
@@ -9,6 +9,7 @@ import { CreateCourseResponseDto } from 'src/courses/dto/create-course-response.
 import { Course } from './entity/course.entity';
 import { FilterCoursesDto } from './dto/filter-courses.dto';
 import { FilteredCoursesResponseDto } from './dto/filtered-courses-response.dto';
+import { EnrolledTopicResponseDto } from './dto/user-enrolled-career-track.response.dto';
 
 @Controller('courses')
 export class CoursesController {
@@ -44,19 +45,25 @@ export class CoursesController {
 
   /**
    * Endpoint para filtrar cursos por múltiplos critérios
-   * @param filterDto - Query params com filtros (keyword1, keyword2, keyword3, level, topic, careerTrackId, language, typeContent)
-   * @returns {Promise<FilteredCoursesResponseDto>} cursos filtrados com metadata
+   * Retorna cursos agrupados por tópico e nível, no mesmo formato de my-enrollments
+   * @param filterDto - Query params com filtros (careerTrackId OBRIGATÓRIO, keyword1, keyword2, keyword3, level, topic, language, typeContent)
+   * @param req - Requisição com userId do usuário autenticado
+   * @returns {Promise<EnrolledTopicResponseDto[]>} cursos filtrados agrupados por tópico e nível
    * 
    * Exemplos de uso:
-   * - /courses/filter?keyword1=javascript&level=Iniciante
-   * - /courses/filter?topic=Backend&language=Português
-   * - /courses/filter?keyword1=python&keyword2=data&keyword3=science&careerTrackId=123
+   * - /courses/filter?careerTrackId=123&keyword1=javascript
+   * - /courses/filter?careerTrackId=123&level=Iniciante
+   * - /courses/filter?careerTrackId=123&topic=Backend&language=Português
+   * - /courses/filter?careerTrackId=123&keyword1=python&keyword2=data&keyword3=science
    */
   @Get('filter')
   @UseGuards(JwtAuthGuard)
-  async filterCourses(@Query() filterDto: FilterCoursesDto): Promise<FilteredCoursesResponseDto> {
-    const courses = await this.coursesService.filterCourses(filterDto);
-    return FilteredCoursesResponseDto.create(courses, filterDto);
+  async filterCourses(
+    @Query() filterDto: FilterCoursesDto,
+    @Req() req: any
+  ): Promise<EnrolledTopicResponseDto[]> {
+    const userId = req.user?.userId;
+    return await this.coursesService.filterCoursesGroupedByTopic(filterDto, userId);
   }
 
   @Patch('/:id/disable')

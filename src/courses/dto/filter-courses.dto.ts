@@ -1,6 +1,10 @@
-import { IsOptional, IsString, IsEnum } from 'class-validator';
+import { IsOptional, IsString, IsEnum, IsNotEmpty } from 'class-validator';
 
 export class FilterCoursesDto {
+    @IsNotEmpty()
+    @IsString()
+    careerTrackId: string; // Filtrar por trilha específica (OBRIGATÓRIO)
+
     @IsOptional()
     @IsString()
     keyword1?: string;
@@ -20,10 +24,6 @@ export class FilterCoursesDto {
     @IsOptional()
     @IsString()
     topic?: string; // Assunto/tópico do curso
-
-    @IsOptional()
-    @IsString()
-    careerTrackId?: string; // Filtrar por trilha específica
 
     @IsOptional()
     @IsString()

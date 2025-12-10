@@ -8,6 +8,8 @@ import { FindAllCoursesResponseDto } from './dto/find-all-course-response.dto';
 import { CareerTrackService } from './career-track.service';
 import { User } from '../users/entity/users.entity';
 import { FilterCoursesDto } from './dto/filter-courses.dto';
+import { EnrolledCourseResponseDto, EnrolledTopicResponseDto } from './dto/user-enrolled-career-track.response.dto';
+import { UserCourse } from '../users/entity/user-course.entity';
 
 @Injectable()
 export class CoursesService {
@@ -16,6 +18,8 @@ export class CoursesService {
     private coursesRepository: Repository<Course>,
     @InjectRepository(CategoryCourse)
     private categoryCourseRepository: Repository<CategoryCourse>,
+    @InjectRepository(UserCourse)
+    private userCourseRepository: Repository<UserCourse>,
     private careerTrackService: CareerTrackService,
   ) { }
 
@@ -144,21 +148,30 @@ export class CoursesService {
   }
 
   /**
-   * Filtra cursos baseado em múltiplos critérios
+   * Filtra cursos baseado em múltiplos critérios e retorna agrupados por tópico
+   * Retorna no mesmo formato da API my-enrollments
    * @param filters - Objeto com os filtros a serem aplicados
-   * @returns Array de cursos que atendem aos critérios
+   * @param userId - ID do usuário para buscar status de favoritos e conclusão
+   * @returns Array de tópicos com cursos agrupados por nível
    */
-  async filterCourses(filters: FilterCoursesDto): Promise<Course[]> {
-    const queryBuilder = this.coursesRepository.createQueryBuilder('course')
-      .leftJoinAndSelect('course.categories', 'category')
+  async filterCoursesGroupedByTopic(filters: FilterCoursesDto, userId: string): Promise<EnrolledTopicResponseDto[]> {
+    // Busca as categorias da trilha específica
+    const categoriesQuery = this.categoryCourseRepository.createQueryBuilder('category')
+      .leftJoinAndSelect('category.courses', 'course')
       .leftJoinAndSelect('category.careerTrack', 'careerTrack')
-      .where('course.inactive = :inactive', { inactive: false });
+      .where('category.inactive = :inactive', { inactive: false })
+      .andWhere('course.inactive = :courseInactive', { courseInactive: false });
 
-    // Filtro por palavras-chave (busca em título e descrição)
+    // Filtro obrigatório por trilha
+    if (!filters.careerTrackId) {
+      throw new NotFoundException('careerTrackId is required for filtering courses');
+    }
+    categoriesQuery.andWhere('careerTrack.id = :careerTrackId', { careerTrackId: filters.careerTrackId });
+
+    // Filtro por palavras-chave (busca em título, descrição e tipo)
     const keywords = [filters.keyword1, filters.keyword2, filters.keyword3].filter(k => k);
-
     if (keywords.length > 0) {
-      queryBuilder.andWhere(
+      categoriesQuery.andWhere(
         new Brackets(qb => {
           keywords.forEach((keyword, index) => {
             const paramTitle = `keywordTitle${index}`;
@@ -195,39 +208,100 @@ export class CoursesService {
 
     // Filtro por nível
     if (filters.level) {
-      queryBuilder.andWhere('LOWER(category.level) = LOWER(:level)', { level: filters.level });
+      categoriesQuery.andWhere('LOWER(category.level) = LOWER(:level)', { level: filters.level });
     }
 
     // Filtro por tópico/assunto
     if (filters.topic) {
-      queryBuilder.andWhere('LOWER(category.topic) LIKE LOWER(:topic)', { topic: `%${filters.topic}%` });
-    }
-
-    // Filtro por trilha de carreira
-    if (filters.careerTrackId) {
-      queryBuilder.andWhere('careerTrack.id = :careerTrackId', { careerTrackId: filters.careerTrackId });
+      categoriesQuery.andWhere('LOWER(category.topic) LIKE LOWER(:topic)', { topic: `%${filters.topic}%` });
     }
 
     // Filtro por idioma
     if (filters.language) {
-      queryBuilder.andWhere('LOWER(course.language) = LOWER(:language)', { language: filters.language });
+      categoriesQuery.andWhere('LOWER(course.language) = LOWER(:language)', { language: filters.language });
     }
 
     // Filtro por tipo de conteúdo
     if (filters.typeContent) {
-      queryBuilder.andWhere('LOWER(course.typeContent) = LOWER(:typeContent)', { typeContent: filters.typeContent });
+      categoriesQuery.andWhere('LOWER(course.typeContent) = LOWER(:typeContent)', { typeContent: filters.typeContent });
     }
 
-    // Remove duplicatas e ordena
-    const courses = await queryBuilder
-      .orderBy('course.title', 'ASC')
+    const categories = await categoriesQuery
+      .orderBy('category.topic', 'ASC')
+      .addOrderBy('category.level', 'ASC')
+      .addOrderBy('course.index', 'ASC')
       .getMany();
 
-    // Remove cursos duplicados (caso um curso esteja em múltiplas categorias)
-    const uniqueCourses = courses.filter((course, index, self) =>
-      index === self.findIndex(c => c.id === course.id)
-    );
+    // Busca os dados de UserCourse para o usuário
+    const userCourses = await this.userCourseRepository.find({
+      where: { user: { id: userId } },
+      relations: ['course'],
+    });
 
-    return uniqueCourses;
+    // Map courseId to userCourse
+    const userCourseMap = new Map<string, UserCourse>();
+    userCourses.forEach(uc => {
+      if (uc.course?.id) userCourseMap.set(uc.course.id, uc);
+    });
+
+    // Organiza os cursos por tópico e nível
+    const topicsMap = new Map<string, Map<string, Course[]>>();
+
+    categories.forEach(category => {
+      const topicName = category.topic || 'Tópico não especificado';
+      const levelName = category.level || 'Nível não especificado';
+
+      if (!topicsMap.has(topicName)) {
+        topicsMap.set(topicName, new Map());
+      }
+
+      const topicMap = topicsMap.get(topicName)!;
+      if (!topicMap.has(levelName)) {
+        topicMap.set(levelName, []);
+      }
+
+      if (category.courses && Array.isArray(category.courses)) {
+        const activeCourses = category.courses
+          .filter(course => course && !course.inactive)
+          .sort((a, b) => (a.index || 0) - (b.index || 0));
+
+        topicMap.get(levelName)!.push(...activeCourses);
+      }
+    });
+
+    // Converte para o formato de resposta
+    const topics: EnrolledTopicResponseDto[] = [];
+
+    for (const [topic, levelsMap] of topicsMap.entries()) {
+      for (const [level, courses] of levelsMap.entries()) {
+        // Remove duplicatas por ID
+        const uniqueCourses = courses.filter((course, index, self) =>
+          index === self.findIndex(c => c.id === course.id)
+        );
+
+        if (uniqueCourses.length > 0) {
+          const coursesWithStatus = uniqueCourses.map(course => {
+            const userCourse = userCourseMap.get(course.id);
+            return EnrolledCourseResponseDto.fromCourseWithUser(course, userCourse);
+          });
+
+          topics.push({
+            topic,
+            level,
+            courses: coursesWithStatus
+          });
+        }
+      }
+    }
+
+    // Ordena tópicos e níveis
+    topics.sort((a, b) => {
+      const topicComparison = a.topic.localeCompare(b.topic);
+      if (topicComparison !== 0) return topicComparison;
+      const levelOrder = { 'Iniciante': 1, 'Intermediário': 2, 'Avançado': 3 };
+      return (levelOrder[a.level] || 4) - (levelOrder[b.level] || 4);
+    });
+
+    return topics;
   }
 }
