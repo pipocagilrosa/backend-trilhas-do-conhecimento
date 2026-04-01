@@ -53,6 +53,21 @@ Realiza o login do usuário e retorna um token JWT.
 }
 ```
 
+### Logout
+
+**POST** `/auth/logout`
+🔒 **Requer autenticação**
+
+Encerra a sessão do usuário autenticado. O cliente deve descartar o token JWT após chamar este endpoint.
+
+**Response:**
+
+```json
+{
+  "message": "Logged out successfully"
+}
+```
+
 ---
 
 ## 👤 Usuários

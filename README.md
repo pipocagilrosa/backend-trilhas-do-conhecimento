@@ -142,6 +142,7 @@ npm run test:cov
 ### 🔐 Autenticação
 
 - `POST /auth/login` - Login e obtenção do token JWT
+- `POST /auth/logout` - Logout do usuário autenticado
 
 ### 👤 Usuários
 

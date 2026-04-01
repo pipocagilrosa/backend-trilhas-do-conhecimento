@@ -6,6 +6,8 @@ import {
   ValidationPipe,
   Req,
   Body,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
 import { ApiOperation } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
@@ -13,6 +15,7 @@ import { LocalAuthGuard } from './guards/local-auth.guard';
 import { Request } from 'express';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { UserDto, convertDtoToDomain } from './dto/user.dto';
+
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
@@ -25,5 +28,13 @@ export class AuthController {
   @Post('/login')
   async login(@Body() req: UserDto) {
     return await this.authService.login(convertDtoToDomain(req));
+  }
+
+  @ApiOperation({ summary: 'Logout the current user' })
+  @UseGuards(JwtAuthGuard)
+  @Post('/logout')
+  @HttpCode(HttpStatus.OK)
+  logout() {
+    return { message: 'Logged out successfully' };
   }
 }
