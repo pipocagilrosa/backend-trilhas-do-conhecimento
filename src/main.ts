@@ -3,9 +3,15 @@ import { AppModule } from './app.module';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { RolesGuard } from './auth/guards/roles.guard';
 import corsConfig from './config/cors.config';
+import { DataSource } from 'typeorm';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  const dataSource = app.get(DataSource);
+  await dataSource.query(
+    `ALTER TABLE "user_course" ADD COLUMN IF NOT EXISTS "favorite" boolean DEFAULT false;`,
+  );
   app.enableCors(corsConfig());
   const config = new DocumentBuilder()
     .setTitle('Pipoca Agil BackEnd')

@@ -131,3 +131,4 @@ dist
 *.csv
 cadastrar_cursos.js
 payloads_from_corrected.json
+CLAUDE.md
