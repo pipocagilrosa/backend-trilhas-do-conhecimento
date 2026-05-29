@@ -38,7 +38,14 @@ export class UsersService {
       user.birthDate = createUserDto.birthDate;
       user.favoriteWordPhrase = createUserDto.favoriteWordPhrase;
       user.role = 'user';
-      return this.userRepository.save(user);
+      const savedUser = await this.userRepository.save(user);
+
+      // envio não bloqueante: falha de SMTP não impede o cadastro
+      this.sendWelcomeEmail(savedUser.name, savedUser.email).catch((err) => {
+        console.error('Falha ao enviar e-mail de boas-vindas:', err.message);
+      });
+
+      return savedUser;
     } catch (err) {
       throw new Error(`Error creating ${err} user ${err.message}`);
     }
@@ -98,6 +105,21 @@ export class UsersService {
     } catch (err) {
       throw new Error(`Error disabling user: ${err.message}`);
     }
+  }
+
+  private async sendWelcomeEmail(name: string, email: string) {
+    const message = `Olá ${name},
+
+Parabéns! Seu acesso ao conteúdo foi liberado com sucesso.
+
+Seu login será sempre este e-mail: ${email}`;
+
+    await this.mailService.sendMail({
+      from: 'contato@apenascoisas.com.br',
+      to: email,
+      subject: 'Bem-vindo(a)! Seu acesso foi liberado',
+      text: message,
+    });
   }
 
   async sendPasswordResetEmail(email: string) {
