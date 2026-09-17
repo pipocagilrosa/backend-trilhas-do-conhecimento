@@ -2,7 +2,7 @@
 
 ## 🎯 Documentação Principal
 
-### 🏠 [README Principal](./README.md)
+### 🏠 [README Principal](../README.md)
 
 Visão geral do projeto, instalação e configuração básica.
 
@@ -14,7 +14,7 @@ Visão geral do projeto, instalação e configuração básica.
 
 **Guia técnico para desenvolvedores** com exemplos práticos, scripts, clientes API, hooks React e casos de uso avançados.
 
-### 📋 [Changelog](./CHANGELOG.md)
+### 📋 [Changelog](../CHANGELOG.md)
 
 **Histórico de versões** com todas as mudanças, novas funcionalidades e correções implementadas.
 
@@ -39,14 +39,14 @@ Visão geral do projeto, instalação e configuração básica.
 
 ### Para **Desenvolvedores**:
 
-1. 🏠 Configure o ambiente seguindo o **[README](./README.md)**
+1. 🏠 Configure o ambiente seguindo o **[README](../README.md)**
 2. 🔧 Explore os exemplos no **[Developer Guide](./DEVELOPER_GUIDE.md)**
 3. 📊 Use os dados do **[CSV Payloads](./PAYLOADS_CURSOS_CSV.md)**
-4. 📋 Acompanhe atualizações no **[Changelog](./CHANGELOG.md)**
+4. 📋 Acompanhe atualizações no **[Changelog](../CHANGELOG.md)**
 
 ### Para **Administradores**:
 
-1. 🐳 Deploy com Docker seguindo o **[README](./README.md)**
+1. 🐳 Deploy com Docker seguindo o **[README](../README.md)**
 2. 🔑 Configure variáveis de ambiente de produção
 3. 📖 Use endpoints de admin da **[API Documentation](./API_DOCUMENTATION.md)**
 4. 📊 Importe dados usando **[CSV Payloads](./PAYLOADS_CURSOS_CSV.md)**
@@ -105,7 +105,7 @@ POST /courses
 
 - JWT Setup: [API_DOCUMENTATION.md#autenticação](./API_DOCUMENTATION.md#🔐-autenticação)
 - Roles e Guards: [DEVELOPER_GUIDE.md#segurança](./DEVELOPER_GUIDE.md#9-segurança)
-- Variáveis de ambiente: [README.md#variáveis](./README.md#🌍-variáveis-de-ambiente)
+- Variáveis de ambiente: [README.md#variáveis](../README.md#🌍-variáveis-de-ambiente)
 
 ### **Trilhas de Carreira**
 
@@ -116,13 +116,13 @@ POST /courses
 ### **Sistema de Cursos**
 
 - API de cursos: [API_DOCUMENTATION.md#cursos](./API_DOCUMENTATION.md#📖-cursos)
-- Sistema inteligente: [CHANGELOG.md#sistema-inteligente](./CHANGELOG.md#sistema-inteligente-de-criação-de-cursos)
+- Sistema inteligente: [CHANGELOG.md#sistema-inteligente](../CHANGELOG.md#sistema-inteligente-de-criação-de-cursos)
 - Exemplos avançados: [DEVELOPER_GUIDE.md#cursos](./DEVELOPER_GUIDE.md#2-gestão-de-cursos-admin)
 
 ### **Setup e Deploy**
 
-- Instalação: [README.md#início-rápido](./README.md#🚀-início-rápido)
-- Docker: [README.md#docker](./README.md#🐳-executar-com-docker-recomendado)
+- Instalação: [README.md#início-rápido](../README.md#🚀-início-rápido)
+- Docker: [README.md#docker](../README.md#🐳-executar-com-docker-recomendado)
 - Produção: [DEVELOPER_GUIDE.md#deployment](./DEVELOPER_GUIDE.md#🚀-deployment-guide)
 
 ### **Exemplos de Código**
@@ -146,9 +146,9 @@ POST /courses
 
 1. **Problema de uso básico** → [API_DOCUMENTATION.md](./API_DOCUMENTATION.md)
 2. **Implementação técnica** → [DEVELOPER_GUIDE.md](./DEVELOPER_GUIDE.md)
-3. **Setup e configuração** → [README.md](./README.md)
+3. **Setup e configuração** → [README.md](../README.md)
 4. **Dados para testes** → [PAYLOADS_CURSOS_CSV.md](./PAYLOADS_CURSOS_CSV.md)
-5. **Histórico de mudanças** → [CHANGELOG.md](./CHANGELOG.md)
+5. **Histórico de mudanças** → [CHANGELOG.md](../CHANGELOG.md)
 
 ---
 

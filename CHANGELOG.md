@@ -231,6 +231,6 @@ Contribuições foram implementadas por:
 
 Para detalhes técnicos completos, consulte:
 
-- [API Documentation](./API_DOCUMENTATION.md)
-- [Developer Guide](./DEVELOPER_GUIDE.md)
-- [CSV Payloads](./PAYLOADS_CURSOS_CSV.md)
+- [API Documentation](./docs/API_DOCUMENTATION.md)
+- [Developer Guide](./docs/DEVELOPER_GUIDE.md)
+- [CSV Payloads](./docs/PAYLOADS_CURSOS_CSV.md)

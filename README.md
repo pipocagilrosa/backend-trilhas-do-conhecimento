@@ -68,13 +68,13 @@ npm run start:prod
 
 ### 📖 Documentação da API
 
-- **[API Documentation](./API_DOCUMENTATION.md)** - Guia completo de todos os endpoints
-- **[Developer Guide](./DEVELOPER_GUIDE.md)** - Exemplos práticos e códigos para desenvolvedores
+- **[API Documentation](./docs/API_DOCUMENTATION.md)** - Guia completo de todos os endpoints
+- **[Developer Guide](./docs/DEVELOPER_GUIDE.md)** - Exemplos práticos e códigos para desenvolvedores
 - **[Changelog](./CHANGELOG.md)** - Histórico de versões e mudanças
 
 ### 🎯 Payloads de Exemplo
 
-- **[CSV Payloads](./PAYLOADS_CURSOS_CSV.md)** - Dados estruturados para importação de cursos
+- **[CSV Payloads](./docs/PAYLOADS_CURSOS_CSV.md)** - Dados estruturados para importação de cursos
 
 ### 🌐 Base URL
 
@@ -286,8 +286,8 @@ MAIL_PASS=smtp-app-password
 
 ### Documentação
 
-- 📖 **[API Documentation](./API_DOCUMENTATION.md)** - Referência completa da API
-- 🔧 **[Developer Guide](./DEVELOPER_GUIDE.md)** - Guia para desenvolvedores
+- 📖 **[API Documentation](./docs/API_DOCUMENTATION.md)** - Referência completa da API
+- 🔧 **[Developer Guide](./docs/DEVELOPER_GUIDE.md)** - Guia para desenvolvedores
 - 📋 **[Changelog](./CHANGELOG.md)** - Histórico de versões
 
 ### Issues e Bugs
@@ -333,4 +333,4 @@ Desenvolvido com ❤️ usando:
 
 ---
 
-Para começar a usar a API, consulte a **[Documentação Completa](./API_DOCUMENTATION.md)** 🚀
+Para começar a usar a API, consulte a **[Documentação Completa](./docs/API_DOCUMENTATION.md)** 🚀
